@@ -7,7 +7,7 @@ export default function Index() {
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
       <Text className="font-archivo-bold text-3xl px-4 text-text">
-        Settings
+        Routines
       </Text>
     </View>
   );
