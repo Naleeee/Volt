@@ -20,7 +20,9 @@ jobs:
           bash .github/scripts/set-project-status.sh "${BASH_REMATCH[1]}" "In Progress" "Todo"
 
   link-pr:
-    if: github.event_name == 'pull_request' && github.event.action == 'opened' && startsWith(github.head_ref, 'VT-')
+    if:
+      github.event_name == 'pull_request' && github.event.action == 'opened' &&
+      startsWith(github.head_ref, 'VT-')
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -38,7 +40,10 @@ jobs:
           printf 'Closes #%s\n\n%s' "$ISSUE" "$PR_BODY" | gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file -
 
   done:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && startsWith(github.head_ref, 'VT-')
+    if:
+      github.event_name == 'pull_request' && github.event.action == 'closed' &&
+      github.event.pull_request.merged == true && startsWith(github.head_ref,
+      'VT-')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
