@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "WorkoutTracker54",
-    "slug": "WorkoutTracker54",
+    "name": "Volt",
+    "slug": "Volt",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "workouttracker54",
+    "scheme": "volt",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
