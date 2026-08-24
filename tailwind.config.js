@@ -11,6 +11,13 @@ module.exports = {
         card2: "#1F222B",
         muted: "#8C92A0",
       },
+      fontFamily: {
+        archivo: ["Archivo-Regular"],
+        "archivo-medium": ["Archivo-Medium"],
+        "archivo-semibold": ["Archivo-SemiBold"],
+        "archivo-bold": ["Archivo-Bold"],
+        "archivo-black": ["Archivo-Black"],
+      },
     },
   },
   plugins: [],
