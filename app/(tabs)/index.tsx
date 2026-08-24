@@ -1,15 +1,12 @@
 import { Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Index() {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text className="bg-slate-700 text-amber-600 font-archivo-bold">
+    <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
+      <Text className="font-archivo-bold text-3xl px-4 text-text">
         Routines
       </Text>
     </View>
