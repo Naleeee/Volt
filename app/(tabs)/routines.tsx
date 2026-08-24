@@ -9,7 +9,7 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>Hello explore</Text>
+      <Text className="bg-slate-700 text-amber-600">Routines</Text>
     </View>
   );
 }
