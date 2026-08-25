@@ -59,6 +59,7 @@
     "drizzle-kit": "^0.31.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "expo-drizzle-studio-plugin": "^0.2.1",
     "postcss": "^8.5.26",
     "tailwindcss": "3",
     "typescript": "~5.9.2"

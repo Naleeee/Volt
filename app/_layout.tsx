@@ -1,10 +1,13 @@
 import { Stack } from "expo-router";
 import "../global.css";
 import { useFonts } from "expo-font";
+import { useEffect } from "react";
 import { Text, View } from "react-native";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
-import { db } from "@/db/client";
+import { db, sqlite } from "@/db/client";
 import migrations from "@/db/drizzle/migrations";
+import { seedIfEmpty } from "@/db/seed";
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 
 // import {
 //   DarkTheme,
@@ -24,6 +27,11 @@ export default function RootLayout() {
   });
 
   const { success: migrated, error: migrationError } = useMigrations(db, migrations);
+  useDrizzleStudio(sqlite);
+
+  useEffect(() => {
+    if (migrated && __DEV__) seedIfEmpty();
+  }, [migrated]);
 
   if (migrationError) {
     return (
