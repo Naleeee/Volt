@@ -38,7 +38,7 @@ export async function getSettings(): Promise<Settings> {
 }
 
 // Set a setting value in the database. If the key already exists, it will be updated.
-export async function setSettings<K extends keyof Settings>(
+export async function setSetting<K extends keyof Settings>(
   key: K,
   value: Settings[K],
 ) {
