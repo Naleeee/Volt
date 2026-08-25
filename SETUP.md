@@ -198,9 +198,42 @@ Alternative if you'd rather not install Android Studio at all: `eas build -p and
 ## 9. Build order (each step verifiable)
 
 1. Scaffold + NativeWind + fonts → verify: themed screen on device.
-2. Schema + migrations + seed a routine in code → verify: rows visible via `npx drizzle-kit studio` or a debug list.
+2. Schema + migrations + seed a routine in code → verify: rows visible in Drizzle Studio via `expo-drizzle-studio-plugin` (`shift+m` in the Expo terminal) or a debug list. `npx drizzle-kit studio` does not work with the expo driver.
 3. Exercise CRUD + media picking (screens 3, 4) → verify: create with photo, kill app, still there.
 4. Routine builder + detail (2) → verify: build Push Day end-to-end.
 5. Session engine: store + checklist (5c) + reps focus (5) + rest (5b) → verify: full workout logged; kill app mid-session, resume works.
 6. Time + other focus views (5d), sounds/haptics/keep-awake/notifications.
 7. Summary (6), home stats (1), settings (7), export.
+
+### Issue order (GitHub #1–29)
+
+The numbering follows the design's screen order, not the dependency graph. Every issue carries a `Depends on` line — never start one whose dependencies are still open.
+
+**Critical path** (strictly sequential, nothing here parallelizes):
+
+```
+#3 schema ─► #6 exercise form ─► #8 library grid ─► #11 routine builder ─► #13 routine detail ─► #14 session engine ─► #15 checklist
+                                                          ▲
+                                       #10 design gaps ───┘  (also feeds #14, #18, #29)
+```
+
+**Where the numbering misleads:**
+
+- `#10` (design gaps) is numbered after the Library issues but blocks `#11` — do it right after `#3`, not when you reach it.
+- `#7` (media pipeline) is a dead end: nothing depends on it. Push it to the end; it's the heaviest Library item.
+- `#4` (units) and `#5` (settings store) are small and dependency-free but needed early: `#5` blocks `#19` and `#26`, `#4` is used from `#11` onward.
+
+**Recommended order:**
+
+| Phase | Issues | Note |
+|---|---|---|
+| Foundation wrap-up | #3 → #5, #4 | small; unblock later work |
+| Design | #10 | before #11 — the builder has no artboard |
+| Library | #6 → #8 → #9 | skip #7 for now |
+| Routines | #11 → #13 → #12 | detail first, #14 needs it |
+| Session core | #14 → #15 → #16 → #17 → #18 → #19 | usable workout tracker after #19 |
+| Session extras | #22, #23, #24, #21, #20 | all leaves — any order |
+| Home & Settings | #25, #26 → #28, #27 | #27 only needs #3 but is pointless without history |
+| Polish | #29, then #7 | empty states need #8 + #12 |
+
+**Leaves** (nothing depends on them, reorder freely): #7, #9, #20, #21, #22, #23, #24, #25, #27, #28, #29.
