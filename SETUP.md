@@ -198,7 +198,7 @@ Alternative if you'd rather not install Android Studio at all: `eas build -p and
 ## 9. Build order (each step verifiable)
 
 1. Scaffold + NativeWind + fonts → verify: themed screen on device.
-2. Schema + migrations + seed a routine in code → verify: rows visible via `npx drizzle-kit studio` or a debug list.
+2. Schema + migrations + seed a routine in code → verify: rows visible in Drizzle Studio via `expo-drizzle-studio-plugin` (`shift+m` in the Expo terminal) or a debug list. `npx drizzle-kit studio` does not work with the expo driver.
 3. Exercise CRUD + media picking (screens 3, 4) → verify: create with photo, kill app, still there.
 4. Routine builder + detail (2) → verify: build Push Day end-to-end.
 5. Session engine: store + checklist (5c) + reps focus (5) + rest (5b) → verify: full workout logged; kill app mid-session, resume works.
