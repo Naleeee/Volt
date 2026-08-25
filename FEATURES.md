@@ -53,7 +53,7 @@ Legend: **[v1]** ship first · **[v2]** later, don't build now.
 
 ## Settings (7)
 
-- **[v1]** Rest defaults: between sets (90 s), between exercises (2:00), auto-start toggle.
+- **[v1]** Rest defaults: between sets (45 s), between exercises (90 s), auto-start toggle.
 - **[v1]** Timer sounds, keep screen awake.
 - **[v1]** Export history (CSV or JSON via share sheet).
 - **[v1]** Erase all data (confirmation required).
