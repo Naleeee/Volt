@@ -51,6 +51,9 @@ npx expo install expo-font @expo-google-fonts/archivo
 
 # layout
 npx expo install react-native-safe-area-context   # already in template, keep versions aligned
+
+# formatting
+npm i date-fns                                    # date logic only (weekday labels, Monday-start weeks); clocks and weights are hand-written
 ```
 
 Always prefer `npx expo install` over `npm i` for Expo/RN packages — it picks versions compatible with your SDK.
@@ -165,7 +168,7 @@ forge/
   lib/
     session-store.ts          # zustand: active session (ids, timers as timestamps)
     media.ts                  # pick → copy to documents dir → return path
-    format.ts                 # clocks, dates
+    format.ts                 # formatClock (mm:ss), formatWeight (kg), formatLastPerformed (date-fns)
   assets/
   global.css  tailwind.config.js  drizzle.config.ts  babel.config.js  metro.config.js
 ```
