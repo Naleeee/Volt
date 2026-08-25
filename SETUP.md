@@ -79,7 +79,7 @@ Verify: a `className="bg-[#C8F63F]"` view renders volt.
 | `session_sets` | id, sessionId, exerciseId, setNumber, reps, seconds, weightKg, note, completedAt |
 | `settings` | key, value (single kv table) |
 
-Conventions: timestamps as unix ms integers; **weights always stored in kg** (convert + round for display: 2.5 lb / 1.25 kg increments).
+Conventions: timestamps as unix ms integers; **weights always in kg** — entered, stored and displayed in kg, no unit conversion (lb is a future feature, see FEATURES.md).
 
 ### Config (`drizzle.config.ts`)
 
@@ -160,7 +160,6 @@ forge/
   lib/
     session-store.ts          # zustand: active session (ids, timers as timestamps)
     media.ts                  # pick → copy to documents dir → return path
-    units.ts                  # kg ↔ lb, rounding
     format.ts                 # clocks, dates
   assets/
   global.css  tailwind.config.js  drizzle.config.ts  babel.config.js  metro.config.js
@@ -221,7 +220,7 @@ The numbering follows the design's screen order, not the dependency graph. Every
 
 - `#10` (design gaps) is numbered after the Library issues but blocks `#11` — do it right after `#3`, not when you reach it.
 - `#7` (media pipeline) is a dead end: nothing depends on it. Push it to the end; it's the heaviest Library item.
-- `#4` (units) and `#5` (settings store) are small and dependency-free but needed early: `#5` blocks `#19` and `#26`, `#4` is used from `#11` onward.
+- `#4` (formatting) and `#5` (settings store) are small and dependency-free but needed early: `#5` blocks `#19` and `#26`, `#4` is used from `#11` onward.
 
 **Recommended order:**
 
