@@ -153,10 +153,15 @@ forge/
       [id]/summary.tsx        # 6 · Session complete
   components/                 # shared UI (Card, TypeBadge, Stepper, Ring, TabIcon…)
   db/
-    schema.ts
-    client.ts
-    queries.ts                # aggregates: week stats, ghost values, volume
+    schema.ts                 # tables (Drizzle definitions)
+    client.ts                 # connection + PRAGMA foreign_keys
+    seed.ts                   # dev fixture (__DEV__ only)
     drizzle/                  # generated migrations — commit these
+    queries/                  # one file per domain, reads (hooks) and writes together
+      settings.ts             # Settings type, defaults, useSettings, setSetting
+      exercises.ts
+      routines.ts
+      sessions.ts             # start / log set / finish, ghost values, week stats
   lib/
     session-store.ts          # zustand: active session (ids, timers as timestamps)
     media.ts                  # pick → copy to documents dir → return path
@@ -166,7 +171,7 @@ forge/
 ```
 
 Rules of thumb:
-- Screens read via `useLiveQuery`, write via functions in `db/queries.ts`.
+- Screens read via `useLiveQuery` hooks and write via functions from `db/queries/<domain>.ts` — a domain's reads and writes live in one file. Screens never import `schema` or `client` directly.
 - Timers are **timestamps, not intervals**: store `restEndsAt` / `setStartedAt` in the store, derive display time; schedule the rest-end local notification when rest starts, cancel on skip.
 - Every logged set is inserted immediately — the zustand store holds only ephemeral pointers, never unsaved workout data.
 - Intercept the Android hardware back button on session screens (confirm before leaving an active workout).
