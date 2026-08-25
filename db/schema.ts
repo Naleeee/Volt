@@ -1,13 +1,12 @@
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { MEASURED_BY, MEDIA_TYPES } from "@/lib/enums";
 
 export const exercises = sqliteTable("exercises", {
   id: integer("id").primaryKey(),
   name: text("name").notNull(),
-  measuredBy: text("measured_by", {
-    enum: ["reps", "time", "other"],
-  }).notNull(),
+  measuredBy: text("measured_by", { enum: MEASURED_BY }).notNull(),
   mediaPath: text("media_path"),
-  mediaType: text("media_type", { enum: ["photo", "gif", "video"] }),
+  mediaType: text("media_type", { enum: MEDIA_TYPES }),
   notes: text("notes"),
   restOverrideSec: integer("rest_override_sec"),
   archivedAt: integer("archived_at"),
