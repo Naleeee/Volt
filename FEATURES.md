@@ -31,7 +31,7 @@ Legend: **[v1]** ship first · **[v2]** later, don't build now.
   - Other: free-form note entry per set — *no design yet*.
 - **[v1]** Rest timer: auto-starts on set logged (toggle), full-screen countdown ring, +15 s, skip, "up next" card. Default durations from Settings, per-exercise override wins.
 - **[v1]** Session clock and per-exercise progress bar; set dots for the current exercise.
-- **[v1]** Previous-session ghost values in the set table ("last time: 8 @ 135 lb") — highest-value training feature, nearly free once sessions are stored.
+- **[v1]** Previous-session ghost values in the set table ("last time: 8 @ 60 kg") — highest-value training feature, nearly free once sessions are stored.
 - **[v1]** Skip set, back to list, finish early.
 - **[v1]** Crash-safe: every logged set is written to the DB immediately; an unfinished session shows a "Resume workout" bar on Home (*state not in design*).
 - **[v1]** Keep screen awake during sessions (setting).
@@ -53,8 +53,7 @@ Legend: **[v1]** ship first · **[v2]** later, don't build now.
 
 ## Settings (7)
 
-- **[v1]** Rest defaults: between sets (90 s), between exercises (2:00), auto-start toggle.
-- **[v1]** Units lb / kg (weights stored canonically in kg, converted for display).
+- **[v1]** Rest defaults: between sets (45 s), between exercises (90 s), auto-start toggle.
 - **[v1]** Timer sounds, keep screen awake.
 - **[v1]** Export history (CSV or JSON via share sheet).
 - **[v1]** Erase all data (confirmation required).
@@ -72,3 +71,8 @@ Legend: **[v1]** ship first · **[v2]** later, don't build now.
 - **[v2]** Health Connect workout write.
 - **[v2]** Supersets / circuits — keep an optional `group` column on routine entries so it's not a migration later.
 - **[v2]** Home-screen widgets.
+
+## Future features
+
+- **[v2]** Unit selection lb / kg. v1 is kg-only: weights are entered, stored and displayed in kg with no conversion anywhere. Adding lb later means a `units` setting, a `lib/units.ts` (kg ↔ lb, rounding to 2.5 lb / 1.25 kg increments) and converting only at the input/display boundary — storage stays kg.
+- **[v2]** Music: link a music app (Spotify, YouTube Music…) and auto-play a chosen playlist when a routine starts — playlist picked per routine, launched from "Start workout" via the music app's deep link / Android intent.
