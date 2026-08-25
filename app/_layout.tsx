@@ -26,11 +26,14 @@ export default function RootLayout() {
     "Archivo-Black": require("../assets/static/Archivo-Black.ttf"),
   });
 
-  const { success: migrated, error: migrationError } = useMigrations(db, migrations);
+  const { success: migrated, error: migrationError } = useMigrations(
+    db,
+    migrations,
+  );
   useDrizzleStudio(sqlite);
 
   useEffect(() => {
-    if (migrated && __DEV__) seedIfEmpty();
+    if (migrated && __DEV__) void seedIfEmpty().catch(console.error);
   }, [migrated]);
 
   if (migrationError) {
