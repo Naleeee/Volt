@@ -62,7 +62,7 @@ Always prefer `npx expo install` over `npm i` for Expo/RN packages — it picks 
 
 Follow the 4 standard steps (see nativewind.dev/getting-started/expo-router if anything drifts):
 
-1. `tailwind.config.js` — `content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"]`, `presets: [require("nativewind/preset")]`. Put the design tokens here (accent `#C8F63F`, bg `#0B0C0F`, card `#17191F`, card2 `#1F222B`, muted `#8C92A0`).
+1. `tailwind.config.js` — `content: ["./src/**/*.{ts,tsx}"]`, `presets: [require("nativewind/preset")]`. Put the design tokens here (accent `#C8F63F`, bg `#0B0C0F`, card `#17191F`, card2 `#1F222B`, muted `#8C92A0`).
 2. `global.css` with the three `@tailwind` directives, imported once in `app/_layout.tsx`.
 3. `babel.config.js` — preset `["babel-preset-expo", { jsxImportSource: "nativewind" }]` plus `"nativewind/babel"`.
 4. `metro.config.js` — wrap with `withNativeWind(config, { input: "./global.css" })`.
@@ -89,8 +89,8 @@ Conventions: timestamps as unix ms integers; **weights always in kg** — entere
 ```ts
 import { defineConfig } from "drizzle-kit";
 export default defineConfig({
-  schema: "./db/schema.ts",
-  out: "./db/drizzle",
+  schema: "./src/db/schema.ts",
+  out: "./src/db/drizzle",
   dialect: "sqlite",
   driver: "expo", // required for expo-sqlite migrations
 });
@@ -133,42 +133,48 @@ Reads in screens use `useLiveQuery(db.select()...)` — lists re-render automati
 
 ## 6. Folder structure
 
+All source lives under `src/` (expo-router picks up `src/app` automatically); the root holds config, assets and docs. Paths elsewhere in this doc and in the issues are relative to `src/`.
+
 ```
 forge/
-  app/                        # expo-router: file = route
-    _layout.tsx               # migrations gate, fonts, theme, gesture root
-    (tabs)/
-      _layout.tsx             # tab bar: Routines · Library · Settings
-      index.tsx               # 1 · Home / routines (+ resume-workout bar)
-      library.tsx             # 3 · Exercise library
-      settings.tsx            # 7 · Settings
-    routine/
-      new.tsx                 #     Routine builder (design TBD)
-      [id]/index.tsx          # 2 · Routine detail
-      [id]/edit.tsx
-    exercise/
-      new.tsx                 # 4 · Create exercise
-      [id].tsx                #     Edit exercise
-    session/
-      [id]/index.tsx          # 5c · Checklist (session home)
-      [id]/focus.tsx          # 5/5d · Set focus (reps | time | other)
-      [id]/rest.tsx           # 5b · Rest timer
-      [id]/summary.tsx        # 6 · Session complete
-  components/                 # shared UI (Card, TypeBadge, Stepper, Ring, TabIcon…)
-  db/
-    schema.ts                 # tables (Drizzle definitions)
-    client.ts                 # connection + PRAGMA foreign_keys
-    seed.ts                   # dev fixture (__DEV__ only)
-    drizzle/                  # generated migrations — commit these
-    queries/                  # one file per domain, reads (hooks) and writes together
-      settings.ts             # Settings type, defaults, useSettings, setSetting
-      exercises.ts
-      routines.ts
-      sessions.ts             # start / log set / finish, ghost values, week stats
-  lib/
-    session-store.ts          # zustand: active session (ids, timers as timestamps)
-    media.ts                  # pick → copy to documents dir → return path
-    format.ts                 # formatClock (mm:ss), formatWeight (kg), formatLastPerformed (date-fns)
+  src/                        # all source; the root holds config, assets and docs
+    app/                        # expo-router: file = route
+      _layout.tsx               # migrations gate, fonts, theme, gesture root
+      (tabs)/
+        _layout.tsx             # tab bar: Routines · Library · Settings
+        index.tsx               # 1 · Home / routines (+ resume-workout bar)
+        library.tsx             # 3 · Exercise library
+        settings.tsx            # 7 · Settings
+      routine/
+        new.tsx                 #     Routine builder (design TBD)
+        [id]/index.tsx          # 2 · Routine detail
+        [id]/edit.tsx
+      exercise/
+        new.tsx                 # 4 · Create exercise
+        [id].tsx                #     Edit exercise
+      session/
+        [id]/index.tsx          # 5c · Checklist (session home)
+        [id]/focus.tsx          # 5/5d · Set focus (reps | time | other)
+        [id]/rest.tsx           # 5b · Rest timer
+        [id]/summary.tsx        # 6 · Session complete
+    components/                 # shared UI (Card, TypeBadge, Stepper, Ring, TabIcon…)
+    db/
+      schema.ts                 # tables (Drizzle definitions)
+      client.ts                 # connection + PRAGMA foreign_keys
+      seed.ts                   # dev fixture (__DEV__ only)
+      drizzle/                  # generated migrations — commit these
+      queries/                  # one file per domain, reads (hooks) and writes together
+        settings.ts             # Settings type, defaults, useSettings, setSetting
+        exercises.ts
+        routines.ts
+        sessions.ts             # start / log set / finish, ghost values, week stats
+    lib/
+      session-store.ts          # zustand: active session (ids, timers as timestamps)
+      media.ts                  # pick → copy to documents dir → return path
+      format.ts                 # formatClock (mm:ss), formatWeight (kg), formatLastPerformed (date-fns)
+      enums.ts                  # MeasuredBy, MediaType — const enums shared by schema and screens
+    constants/
+      theme.js                  # palette shared by tailwind.config.js and components
   assets/
   global.css  tailwind.config.js  drizzle.config.ts  babel.config.js  metro.config.js
 ```
