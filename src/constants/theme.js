@@ -6,6 +6,7 @@ const colors = {
   card2: "#1F222B",
   line: "rgba(255, 255, 255, 0.08)",
   text: "#F4F5F7",
+  "text-inverted": "#0B0C0F",
   muted: "#8C92A0",
 };
 
