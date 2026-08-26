@@ -17,6 +17,7 @@ export function formatLastPerformed(ts: number | null) {
   if (ts == null) return "Never";
   if (isToday(ts)) return "Today";
   if (isYesterday(ts)) return "Yesterday";
-  if (differenceInCalendarDays(Date.now(), ts) < 7) return format(ts, "EEE");
+  const daysAgo = differenceInCalendarDays(Date.now(), ts);
+  if (daysAgo >= 0 && daysAgo < 7) return format(ts, "EEEE");
   return format(ts, "d MMM");
 }
