@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import "../global.css";
+import "../../global.css";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { Text, View } from "react-native";
@@ -19,11 +19,11 @@ import "react-native-reanimated";
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    "Archivo-Regular": require("../assets/static/Archivo-Regular.ttf"),
-    "Archivo-Medium": require("../assets/static/Archivo-Medium.ttf"),
-    "Archivo-SemiBold": require("../assets/static/Archivo-SemiBold.ttf"),
-    "Archivo-Bold": require("../assets/static/Archivo-Bold.ttf"),
-    "Archivo-Black": require("../assets/static/Archivo-Black.ttf"),
+    "Archivo-Regular": require("../../assets/static/Archivo-Regular.ttf"),
+    "Archivo-Medium": require("../../assets/static/Archivo-Medium.ttf"),
+    "Archivo-SemiBold": require("../../assets/static/Archivo-SemiBold.ttf"),
+    "Archivo-Bold": require("../../assets/static/Archivo-Bold.ttf"),
+    "Archivo-Black": require("../../assets/static/Archivo-Black.ttf"),
   });
 
   const { success: migrated, error: migrationError } = useMigrations(

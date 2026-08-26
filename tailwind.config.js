@@ -1,10 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./app/**/*.{js,tsx,ts,jsx}", "./components/**/*.{js,tsx,ts,jsx}"],
+  content: ["./src/**/*.{tsx,ts}"],
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
-      colors: require("./constants/theme").colors,
+      colors: require("./src/constants/theme").colors,
       fontFamily: {
         archivo: ["Archivo-Regular"],
         "archivo-medium": ["Archivo-Medium"],
