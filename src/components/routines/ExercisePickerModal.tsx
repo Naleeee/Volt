@@ -5,6 +5,8 @@ import TypeBadge from "@/components/exercises/TypeBadge";
 import SearchBar from "@/components/UI/SearchBar";
 import { useExercises } from "@/db/queries/exercises";
 import type { Exercise } from "@/db/schema";
+import FilterChips from "../UI/FilterChips";
+import { MEASURED_BY_FILTERS, MeasuredByFilter } from "@/constants/filters";
 
 type Props = {
   visible: boolean;
@@ -12,14 +14,21 @@ type Props = {
   onPick: (exercise: Exercise) => void;
 };
 
-export default function ExercisePickerModal({ visible, onClose, onPick }: Props) {
+export default function ExercisePickerModal({
+  visible,
+  onClose,
+  onPick,
+}: Props) {
   const insets = useSafeAreaInsets();
   const exercises = useExercises();
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<MeasuredByFilter>("all");
 
   const needle = query.trim().toLowerCase();
-  const visibleExercises = exercises.filter((e) =>
-    e.name.toLowerCase().includes(needle),
+  const visibleExercises = exercises.filter(
+    (e) =>
+      (filter === "all" || e.measuredBy === filter) &&
+      e.name.toLowerCase().includes(needle),
   );
 
   return (
@@ -31,17 +40,26 @@ export default function ExercisePickerModal({ visible, onClose, onPick }: Props)
     >
       <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
         <View className="flex-row items-center justify-between px-5 py-4">
-          <Text className="font-archivo-bold text-2xl text-text">Add exercise</Text>
+          <Text className="font-archivo-bold text-3xl text-text">
+            Add exercise
+          </Text>
           <Pressable onPress={onClose} hitSlop={8}>
-            <Text className="font-archivo-semibold text-base text-muted">Close</Text>
+            <Text className="font-archivo-semibold text-base text-muted">
+              Close
+            </Text>
           </Pressable>
         </View>
-        <View className="px-5 pb-3">
+        <View className="flex gap-4 px-5">
           <SearchBar
             value={query}
             onChangeText={setQuery}
             placeholder="Search exercises"
             autoFocus
+          />
+          <FilterChips
+            options={MEASURED_BY_FILTERS}
+            value={filter}
+            onChange={setFilter}
           />
         </View>
         <FlatList
