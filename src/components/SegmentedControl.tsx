@@ -40,8 +40,10 @@ export default function SegmentedControl<T extends string>({
     options.findIndex((o) => o.value === value),
   );
   const segmentWidth =
-    (width - 2 * (BORDER + PAD) - GAP * (options.length - 1)) / options.length;
-
+    width > 0 && options.length > 0
+      ? (width - 2 * (BORDER + PAD) - GAP * (options.length - 1)) /
+        options.length
+      : 0;
   const thumbStyle = useAnimatedStyle(() => ({
     width: segmentWidth,
     transform: [
