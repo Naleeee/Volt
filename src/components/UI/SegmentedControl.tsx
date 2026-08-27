@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, Text, View, type LayoutChangeEvent } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
+  useSharedValue,
   withTiming,
 } from "react-native-reanimated";
 import { colors } from "@/constants/theme";
@@ -34,21 +35,25 @@ export default function SegmentedControl<T extends string>({
   legend,
   error,
 }: Props<T>) {
-  const [width, setWidth] = useState(0);
   const index = Math.max(
     0,
     options.findIndex((o) => o.value === value),
   );
+  const [trackWidth, setTrackWidth] = useState(0);
   const segmentWidth =
-    width > 0 && options.length > 0
-      ? (width - 2 * (BORDER + PAD) - GAP * (options.length - 1)) /
+    trackWidth > 0
+      ? (trackWidth - 2 * (BORDER + PAD) - GAP * (options.length - 1)) /
         options.length
       : 0;
+  const position = useSharedValue(index);
+
+  // Syncs the thumb with the controlled value (taps and programmatic changes alike).
+  useEffect(() => {
+    position.value = withTiming(index, TIMING);
+  }, [index, position]);
+
   const thumbStyle = useAnimatedStyle(() => ({
-    width: segmentWidth,
-    transform: [
-      { translateX: withTiming(index * (segmentWidth + GAP), TIMING) },
-    ],
+    transform: [{ translateX: position.value * (segmentWidth + GAP) }],
   }));
 
   return (
@@ -57,24 +62,23 @@ export default function SegmentedControl<T extends string>({
       <View
         className={`flex-row bg-card2 border ${error ? "border-danger" : "border-line"} rounded-2xl p-1 gap-1`}
         onLayout={(e: LayoutChangeEvent) =>
-          setWidth(e.nativeEvent.layout.width)
+          setTrackWidth(e.nativeEvent.layout.width)
         }
       >
-        {width > 0 ? (
-          <Animated.View
-            style={[
-              {
-                position: "absolute",
-                top: PAD,
-                bottom: PAD,
-                left: PAD,
-                borderRadius: 10,
-                backgroundColor: colors.card3,
-              },
-              thumbStyle,
-            ]}
-          />
-        ) : null}
+        <Animated.View
+          style={[
+            {
+              position: "absolute",
+              top: PAD,
+              bottom: PAD,
+              left: PAD,
+              width: segmentWidth,
+              borderRadius: 10,
+              backgroundColor: colors.card3,
+            },
+            thumbStyle,
+          ]}
+        />
         {options.map((option) => (
           <Segment
             key={option.value}
@@ -85,7 +89,9 @@ export default function SegmentedControl<T extends string>({
         ))}
       </View>
       {error ? (
-        <Text className="font-archivo text-xs text-danger mt-2 px-4">{error}</Text>
+        <Text className="font-archivo text-xs text-danger mt-2 px-4">
+          {error}
+        </Text>
       ) : legend ? (
         <Text className="font-archivo text-xs text-muted mt-2 px-4">
           {legend}
