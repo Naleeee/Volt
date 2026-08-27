@@ -1,6 +1,8 @@
 import SegmentedControl from "@/components/SegmentedControl";
 import VTextInput from "@/components/TextInput";
+import { insertExercise, useExercise } from "@/db/queries/exercises";
 import { MeasuredBy } from "@/lib/enums";
+import { router } from "expo-router";
 import { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -11,22 +13,40 @@ const MEASURED_BY_OPTIONS = [
   { value: MeasuredBy.Other, label: "Other" },
 ] as const;
 
-export default function NewExercise() {
+export default function NewExercise(activeExerciseId?: number) {
   const insets = useSafeAreaInsets();
-  const [name, setName] = useState("");
-  const [measuredBy, setMeasuredBy] = useState<MeasuredBy>(MeasuredBy.Reps);
-  const [note, setNote] = useState("");
+  const exercise = useExercise(activeExerciseId ?? 1); // Example usage of useExercise hook
+  const [name, setName] = useState(exercise?.name || "");
+  const [measuredBy, setMeasuredBy] = useState<MeasuredBy>(
+    exercise?.measuredBy || MeasuredBy.Reps,
+  );
+  const [notes, setNotes] = useState(exercise?.notes || "");
+
+  const insertExerciseHandler = async (values: {
+    name: string;
+    measuredBy: MeasuredBy;
+    notes: string;
+  }) => {
+    try {
+      await insertExercise(values);
+      router.back();
+    } catch (error) {
+      console.error("Error inserting exercise:", error);
+    }
+  };
 
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
       <View className="flex justify-center items-center flex-row bg-card p-6">
-        <Pressable>
+        <Pressable onPress={() => router.back()}>
           <Text className="font-archivo text-md text-muted">Cancel</Text>
         </Pressable>
         <Text className="font-archivo-bold text-2xl flex-grow text-center text-text">
           New Exercise
         </Text>
-        <Pressable>
+        <Pressable
+          onPress={() => insertExerciseHandler({ name, measuredBy, notes })}
+        >
           <Text className="font-archivo text-md text-accent">Save</Text>
         </Pressable>
       </View>
@@ -47,8 +67,8 @@ export default function NewExercise() {
           }
         />
         <VTextInput
-          value={note}
-          onChangeText={setNote}
+          value={notes}
+          onChangeText={setNotes}
           placeholder="About this exercise..."
           label="Notes"
           multiline

@@ -4,13 +4,11 @@ import { z } from "zod";
 import { MEASURED_BY, MeasuredBy } from "@/lib/enums";
 import { db } from "../client";
 import { exercises } from "../schema";
-import { restSeconds } from "./settings";
 
 export const exerciseFormSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
   measuredBy: z.enum(MEASURED_BY),
   notes: z.string().trim().max(500),
-  restOverrideSec: restSeconds.nullable(),
 });
 
 export type ExerciseFormValues = z.infer<typeof exerciseFormSchema>;
@@ -19,7 +17,6 @@ export const EMPTY_EXERCISE: ExerciseFormValues = {
   name: "",
   measuredBy: MeasuredBy.Reps,
   notes: "",
-  restOverrideSec: null,
 };
 
 // Library list: active exercises A→Z, re-renders on any write to the table.
