@@ -43,10 +43,13 @@ export default function Index() {
 
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
-      <Text className="font-archivo-bold text-5xl px-4 text-text">
-        Exercises
-      </Text>
-      <View className="px-4 pt-4 gap-3">
+      <View className="flex items-end flex-row p-4 gap-3">
+        <Text className="font-archivo-bold text-4xl text-text">Exercises</Text>
+        <Text className="font-archivo text-md text-muted">
+          {visible.length}
+        </Text>
+      </View>
+      <View className="px-4 gap-3">
         <SearchBar
           value={query}
           onChangeText={setQuery}

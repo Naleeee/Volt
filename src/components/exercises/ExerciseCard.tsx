@@ -25,7 +25,7 @@ export default function ExerciseCard({
           <Text className="font-archivo-bold text-sm text-text">No Image</Text>
         )}
       </View>
-      <View className="flex-1 justify-between p-4 bg-card rounded-b-3xl border border-t-0 border-muted">
+      <View className="flex-1 justify-between p-4 bg-card rounded-b-3xl border border-t-0 border-muted/50">
         <Text className="font-archivo-bold text-lg text-text">
           {exerciseName}
         </Text>
