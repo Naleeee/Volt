@@ -8,7 +8,7 @@ export default function Index() {
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
       <Text className="font-archivo-bold text-3xl px-4 text-text">
-        Exercices
+        Exercises
       </Text>
       <Pressable
         className="bg-accent rounded-lg p-4 m-4"
@@ -17,7 +17,7 @@ export default function Index() {
         }}
       >
         <Text className="text-text-inverted font-archivo-bold text-lg">
-          New Exercice
+          New Exercise
         </Text>
       </Pressable>
     </View>

@@ -11,7 +11,7 @@ const MEASURED_BY_OPTIONS = [
   { value: MeasuredBy.Other, label: "Other" },
 ] as const;
 
-export default function NewExercice() {
+export default function NewExercise() {
   const insets = useSafeAreaInsets();
   const [name, setName] = useState("");
   const [measuredBy, setMeasuredBy] = useState<MeasuredBy>(MeasuredBy.Reps);
@@ -24,7 +24,7 @@ export default function NewExercice() {
           <Text className="font-archivo text-md text-muted">Cancel</Text>
         </Pressable>
         <Text className="font-archivo-bold text-2xl flex-grow text-center text-text">
-          New Exercice
+          New Exercise
         </Text>
         <Pressable>
           <Text className="font-archivo text-md text-accent">Save</Text>
@@ -34,7 +34,7 @@ export default function NewExercice() {
         <VTextInput
           value={name}
           onChangeText={setName}
-          placeholder="Exercice name"
+          placeholder="Exercise name"
           label="Name"
         />
         <SegmentedControl
@@ -49,7 +49,7 @@ export default function NewExercice() {
         <VTextInput
           value={note}
           onChangeText={setNote}
-          placeholder="About this exercice..."
+          placeholder="About this exercise..."
           label="Notes"
           multiline
         />
