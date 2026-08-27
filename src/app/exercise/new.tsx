@@ -3,8 +3,8 @@ import { router } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import SegmentedControl from "@/components/SegmentedControl";
-import VTextInput from "@/components/TextInput";
+import SegmentedControl from "@/components/UI/SegmentedControl";
+import VTextInput from "@/components/UI/TextInput";
 import { colors } from "@/constants/theme";
 import {
   EMPTY_EXERCISE,

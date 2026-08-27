@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import Toast from "@/components/Toast";
+import Toast from "@/components/UI/Toast";
 import "../../global.css";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
