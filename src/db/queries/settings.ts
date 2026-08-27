@@ -1,14 +1,19 @@
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
+import { z } from "zod";
 import { db } from "../client";
 import { settings } from "../schema";
 
-export type Settings = {
-  restBetweenSetsSec: number;
-  restBetweenExercisesSec: number;
-  autostartRestTimer: boolean;
-  timerSounds: boolean;
-  keepAwake: boolean;
-};
+export const restSeconds = z.number().int().min(5).max(600);
+
+export const settingsSchema = z.object({
+  restBetweenSetsSec: restSeconds,
+  restBetweenExercisesSec: restSeconds,
+  autostartRestTimer: z.boolean(),
+  timerSounds: z.boolean(),
+  keepAwake: z.boolean(),
+});
+
+export type Settings = z.infer<typeof settingsSchema>;
 
 export const DEFAULTS: Settings = {
   restBetweenSetsSec: 45,
@@ -20,10 +25,18 @@ export const DEFAULTS: Settings = {
 
 // Merge the settings from the database with the default settings. If a setting is not found in the database, it will return the default value.
 function merge(rows: { key: string; value: string }[]): Settings {
-  const stored = Object.fromEntries(
-    rows.map((r) => [r.key, JSON.parse(r.value)]),
-  );
-  return { ...DEFAULTS, ...stored };
+  const result = { ...DEFAULTS };
+  for (const { key, value } of rows) {
+    const field = settingsSchema.shape[key as keyof Settings];
+    if (!field) continue;
+    try {
+      const parsed = field.safeParse(JSON.parse(value));
+      if (parsed.success) Object.assign(result, { [key]: parsed.data });
+    } catch {
+      // Ignore invalid JSON and keep the default.
+    }
+  }
+  return result;
 }
 
 // Get the settings from the database and subscribe to changes. If a setting is not found, it will return the default value.
@@ -42,7 +55,7 @@ export async function setSetting<K extends keyof Settings>(
   key: K,
   value: Settings[K],
 ) {
-  const encoded = JSON.stringify(value);
+  const encoded = JSON.stringify(settingsSchema.shape[key].parse(value));
   await db
     .insert(settings)
     .values({ key, value: encoded })

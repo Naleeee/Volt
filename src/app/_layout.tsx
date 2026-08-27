@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import Toast from "@/components/Toast";
 import "../../global.css";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
@@ -9,12 +10,6 @@ import migrations from "@/db/drizzle/migrations";
 import { seedIfEmpty } from "@/db/seed";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 
-// import {
-//   DarkTheme,
-//   DefaultTheme,
-//   ThemeProvider,
-// } from "@react-navigation/native";
-// import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
 export default function RootLayout() {
@@ -49,29 +44,13 @@ export default function RootLayout() {
     return null;
   }
   return (
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false }} />
+      <Toast />
+    </>
   );
 }
 
 export const unstable_settings = {
   anchor: "(tabs)",
 };
-
-// export default function RootLayout() {
-//   const colorScheme = useColorScheme();
-//
-//   return (
-//     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-//       <Stack>
-//         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-//         <Stack.Screen
-//           name="modal"
-//           options={{ presentation: "modal", title: "Modal" }}
-//         />
-//       </Stack>
-//       <StatusBar style="auto" />
-//     </ThemeProvider>
-//   );
-// }
