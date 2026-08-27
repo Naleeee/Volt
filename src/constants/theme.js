@@ -9,6 +9,7 @@ const colors = {
   text: "#F4F5F7",
   "text-inverted": "#0B0C0F",
   muted: "#8C92A0",
+  danger: "#FF5C39",
 };
 
 module.exports = { colors };

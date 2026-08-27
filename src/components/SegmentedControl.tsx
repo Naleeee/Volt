@@ -22,6 +22,7 @@ type Props<T extends string> = {
   label?: string;
   optional?: boolean;
   legend?: string;
+  error?: string;
 };
 
 export default function SegmentedControl<T extends string>({
@@ -31,6 +32,7 @@ export default function SegmentedControl<T extends string>({
   label,
   optional,
   legend,
+  error,
 }: Props<T>) {
   const [width, setWidth] = useState(0);
   const index = Math.max(
@@ -51,7 +53,7 @@ export default function SegmentedControl<T extends string>({
     <View className="w-full">
       {label ? <FieldLabel label={label} optional={optional} /> : null}
       <View
-        className="flex-row bg-card2 border border-line rounded-2xl p-1 gap-1"
+        className={`flex-row bg-card2 border ${error ? "border-danger" : "border-line"} rounded-2xl p-1 gap-1`}
         onLayout={(e: LayoutChangeEvent) =>
           setWidth(e.nativeEvent.layout.width)
         }
@@ -80,7 +82,9 @@ export default function SegmentedControl<T extends string>({
           />
         ))}
       </View>
-      {legend ? (
+      {error ? (
+        <Text className="font-archivo text-xs text-danger mt-2 px-4">{error}</Text>
+      ) : legend ? (
         <Text className="font-archivo text-xs text-muted mt-2 px-4">
           {legend}
         </Text>
