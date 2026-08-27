@@ -1,11 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import FormHeader from "@/components/UI/FormHeader";
 import SegmentedControl from "@/components/UI/SegmentedControl";
 import VTextInput from "@/components/UI/TextInput";
-import { colors } from "@/constants/theme";
 import { exerciseFormSchema, type ExerciseFormValues } from "@/db/queries/exercises";
 import { MeasuredBy } from "@/lib/enums";
 import { toast } from "@/lib/toast";
@@ -45,29 +45,12 @@ export default function ExerciseForm({ title, initial, onSave }: Props) {
 
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
-      <View className="flex justify-center items-center flex-row bg-card p-6">
-        <Pressable
-          className="w-[60px]"
-          onPress={() => router.back()}
-          disabled={isSubmitting}
-        >
-          <Text className="font-archivo text-md text-muted">Cancel</Text>
-        </Pressable>
-        <Text className="font-archivo-bold text-2xl flex-grow text-center text-text">
-          {title}
-        </Text>
-        <Pressable
-          className="w-[60px] items-end"
-          onPress={submit}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <ActivityIndicator size="small" color={colors.accent} />
-          ) : (
-            <Text className="font-archivo text-md text-accent">Save</Text>
-          )}
-        </Pressable>
-      </View>
+      <FormHeader
+        title={title}
+        onCancel={() => router.back()}
+        onSave={submit}
+        saving={isSubmitting}
+      />
       <View className="flex-1 px-5 pt-6 gap-[22px]">
         <Controller
           control={control}
