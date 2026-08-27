@@ -1,5 +1,5 @@
-import NewRoutineCard from "@/components/routines/NewRoutineCard";
 import RoutineCard from "@/components/routines/RoutineCard";
+import DashedButton from "@/components/UI/DashedButton";
 import { useRoutines } from "@/db/queries/routines";
 import { router } from "expo-router";
 import { FlatList, Text, View } from "react-native";
@@ -27,7 +27,10 @@ export default function Index() {
           </Text>
         }
         ListFooterComponent={
-          <NewRoutineCard onPress={() => router.push("/routine/new")} />
+          <DashedButton
+            label="New routine"
+            onPress={() => router.push("/routine/new")}
+          />
         }
         renderItem={({ item }) => (
           <RoutineCard
