@@ -3,7 +3,7 @@ import { z } from "zod";
 import { db } from "../client";
 import { settings } from "../schema";
 
-const restSeconds = z.number().int().min(5).max(600);
+export const restSeconds = z.number().int().min(5).max(600);
 
 export const settingsSchema = z.object({
   restBetweenSetsSec: restSeconds,
