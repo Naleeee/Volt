@@ -25,10 +25,6 @@ type Props = {
 export default function RoutineForm({ title, initial, onSave }: Props) {
   const insets = useSafeAreaInsets();
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [activeTarget, setActiveTarget] = useState<{
-    index: number;
-    key: TargetKey;
-  } | null>(null);
 
   const {
     control,
@@ -98,21 +94,8 @@ export default function RoutineForm({ title, initial, onSave }: Props) {
         renderItem={({ item, index }) => (
           <RoutineExerciseCard
             entry={item}
-            activeTarget={
-              activeTarget?.index === index ? activeTarget.key : null
-            }
-            onToggleTarget={(key) =>
-              setActiveTarget((current) =>
-                current?.index === index && current.key === key
-                  ? null
-                  : { index, key },
-              )
-            }
             onChange={(patch) => update(index, { ...item, ...patch })}
-            onRemove={() => {
-              remove(index);
-              setActiveTarget(null);
-            }}
+            onRemove={() => remove(index)}
             error={firstEntryError(errors.entries?.[index])}
           />
         )}

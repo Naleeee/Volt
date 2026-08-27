@@ -1,9 +1,10 @@
-import { Minus, Plus, X } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { X } from "lucide-react-native";
+import { useState } from "react";
+import { Pressable, Text, TextInput, View } from "react-native";
+import TypeBadge from "@/components/exercises/TypeBadge";
 import { colors } from "@/constants/theme";
 import type { RoutineEntry } from "@/db/queries/routines";
 import { MeasuredBy } from "@/lib/enums";
-import { formatWeight } from "@/lib/format";
 
 export type TargetKey =
   | "targetSets"
@@ -11,57 +12,33 @@ export type TargetKey =
   | "targetTimeSec"
   | "targetWeightKg";
 
-const TARGETS: Record<
-  TargetKey,
-  { step: number; min: number; label: (v: number) => string }
-> = {
-  targetSets: { step: 1, min: 1, label: (v) => `${v} ${v === 1 ? "set" : "sets"}` },
-  targetReps: { step: 1, min: 1, label: (v) => `${v} reps` },
-  targetTimeSec: { step: 5, min: 5, label: (v) => `${v} sec` },
-  targetWeightKg: { step: 2.5, min: 0, label: formatWeight },
+const TYPE_STYLE: Record<MeasuredBy, { edge: string; label: string }> = {
+  [MeasuredBy.Reps]: { edge: "border-l-accent", label: "text-accent" },
+  [MeasuredBy.Time]: { edge: "border-l-time", label: "text-time" },
+  [MeasuredBy.Other]: { edge: "border-l-muted", label: "text-muted" },
 };
 
 type Props = {
   entry: RoutineEntry;
-  activeTarget: TargetKey | null;
-  onToggleTarget: (key: TargetKey) => void;
   onChange: (patch: Partial<RoutineEntry>) => void;
   onRemove: () => void;
   error?: string;
 };
 
-export default function RoutineExerciseCard({
-  entry,
-  activeTarget,
-  onToggleTarget,
-  onChange,
-  onRemove,
-  error,
-}: Props) {
-  const keys: TargetKey[] = ["targetSets"];
-  if (entry.measuredBy === MeasuredBy.Reps) keys.push("targetReps");
-  if (entry.measuredBy === MeasuredBy.Time) keys.push("targetTimeSec");
-  if (entry.measuredBy !== MeasuredBy.Other) keys.push("targetWeightKg");
-
-  const step = (key: TargetKey, direction: 1 | -1) => {
-    const { step, min } = TARGETS[key];
-    const current = entry[key];
-    // Stepping weight below 0 clears it — the pill goes back to "+ weight".
-    if (key === "targetWeightKg" && current !== null && current <= min && direction < 0) {
-      onChange({ targetWeightKg: null });
-      return;
-    }
-    const next = Math.max(min, (current ?? 0) + step * direction);
-    onChange({ [key]: next });
-  };
+export default function RoutineExerciseCard({ entry, onChange, onRemove, error }: Props) {
+  const type = TYPE_STYLE[entry.measuredBy];
+  const hasWeight = entry.targetWeightKg !== null;
 
   return (
-    <View className="bg-card border border-line rounded-[18px] px-3 py-2.5">
-      <View className="flex-row items-center gap-2.5">
-        <View className="w-10 h-10 rounded-[10px] bg-card2" />
-        <Text className="flex-1 font-archivo-bold text-[15px] text-text" numberOfLines={1}>
-          {entry.name}
-        </Text>
+    <View className={`bg-card border border-line border-l-[3px] ${type.edge} rounded-[18px] p-2.5`}>
+      <View className="flex-row items-center gap-3">
+        <View className="w-12 h-12 rounded-[11px] bg-card2" />
+        <View className="flex-1 flex-row items-center gap-2">
+          <Text className="font-archivo-bold text-[15px] text-text shrink" numberOfLines={1}>
+            {entry.name}
+          </Text>
+          <TypeBadge measuredBy={entry.measuredBy} />
+        </View>
         <Pressable
           onPress={onRemove}
           accessibilityRole="button"
@@ -73,47 +50,51 @@ export default function RoutineExerciseCard({
         </Pressable>
       </View>
 
-      <View className="flex-row flex-wrap gap-2 mt-2.5">
-        {keys.map((key) => {
-          const value = entry[key];
-          const active = activeTarget === key;
-          const empty = value === null;
-          return (
-            <Pressable
-              key={key}
-              onPress={() => onToggleTarget(key)}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              className={`rounded-[10px] px-3 py-2 border ${
-                active
-                  ? "bg-card2 border-accent"
-                  : empty
-                    ? "border-dashed border-white/[0.18]"
-                    : "bg-card2 border-line"
-              }`}
-            >
-              <Text
-                className={`font-archivo-bold text-[13px] ${
-                  active ? "text-accent" : empty ? "text-muted" : "text-text"
-                }`}
-              >
-                {empty ? "+ weight" : TARGETS[key].label(value)}
-              </Text>
-            </Pressable>
-          );
-        })}
+      <View className="flex-row gap-2 mt-2">
+        <NumberField
+          label="SETS"
+          labelClass={type.label}
+          value={entry.targetSets}
+          onCommit={(v) => onChange({ targetSets: v ?? entry.targetSets })}
+        />
+        {entry.measuredBy === MeasuredBy.Reps ? (
+          <NumberField
+            label="REPS"
+            labelClass={type.label}
+            value={entry.targetReps}
+            onCommit={(v) => onChange({ targetReps: v ?? entry.targetReps })}
+          />
+        ) : null}
+        {entry.measuredBy === MeasuredBy.Time ? (
+          <NumberField
+            label="HOLD"
+            labelClass={type.label}
+            unit="sec"
+            value={entry.targetTimeSec}
+            onCommit={(v) => onChange({ targetTimeSec: v ?? entry.targetTimeSec })}
+          />
+        ) : null}
+        {entry.measuredBy !== MeasuredBy.Other && hasWeight ? (
+          <NumberField
+            label="WEIGHT"
+            labelClass={type.label}
+            unit="kg"
+            decimal
+            value={entry.targetWeightKg}
+            onCommit={(v) => onChange({ targetWeightKg: v })}
+          />
+        ) : null}
       </View>
 
-      {activeTarget ? (
-        <View className="flex-row items-center justify-between mt-2.5 px-1">
-          <StepButton icon={Minus} onPress={() => step(activeTarget, -1)} label="Decrease" />
-          <Text className="font-archivo-bold text-base text-text">
-            {entry[activeTarget] === null
-              ? "No weight"
-              : TARGETS[activeTarget].label(entry[activeTarget] as number)}
-          </Text>
-          <StepButton icon={Plus} onPress={() => step(activeTarget, 1)} label="Increase" />
-        </View>
+      {entry.measuredBy !== MeasuredBy.Other && !hasWeight ? (
+        <Pressable
+          onPress={() => onChange({ targetWeightKg: 0 })}
+          accessibilityRole="button"
+          hitSlop={8}
+          className="self-end mt-1.5 active:opacity-80"
+        >
+          <Text className="font-archivo-semibold text-xs text-muted">+ Add weight</Text>
+        </Pressable>
       ) : null}
 
       {error ? (
@@ -123,23 +104,54 @@ export default function RoutineExerciseCard({
   );
 }
 
-function StepButton({
-  icon: Icon,
-  onPress,
+// Edits stay local while typing and are committed on blur, so the form only re-renders once per field.
+function NumberField({
   label,
+  labelClass,
+  unit,
+  value,
+  decimal = false,
+  onCommit,
 }: {
-  icon: typeof Minus;
-  onPress: () => void;
   label: string;
+  labelClass: string;
+  unit?: string;
+  value: number | null;
+  decimal?: boolean;
+  onCommit: (value: number | null) => void;
 }) {
+  const [text, setText] = useState(value === null ? "" : String(value));
+
+  const commit = () => {
+    const trimmed = text.trim().replace(",", ".");
+    if (trimmed === "") {
+      onCommit(null);
+      return;
+    }
+    const parsed = decimal ? Number(trimmed) : parseInt(trimmed, 10);
+    if (Number.isFinite(parsed)) onCommit(parsed);
+    else setText(value === null ? "" : String(value));
+  };
+
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      className="w-11 h-11 rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
-    >
-      <Icon size={18} color={colors.text} />
-    </Pressable>
+    <View className="flex-1 bg-card2 border border-line rounded-xl py-1 items-center">
+      <Text className={`font-archivo-bold text-[9px] tracking-[1px] ${labelClass}`}>{label}</Text>
+      <View className="flex-row items-baseline justify-center">
+        <TextInput
+          value={text}
+          onChangeText={setText}
+          onBlur={commit}
+          keyboardType={decimal ? "decimal-pad" : "number-pad"}
+          returnKeyType="done"
+          selectTextOnFocus
+          accessibilityLabel={label}
+          className="font-archivo-black text-[15px] text-text text-center p-0 min-w-[28px]"
+          style={{ fontVariant: ["tabular-nums"], includeFontPadding: false }}
+        />
+        {unit ? (
+          <Text className="font-archivo-bold text-[11px] text-muted"> {unit}</Text>
+        ) : null}
+      </View>
+    </View>
   );
 }

@@ -9,6 +9,8 @@ export default function Index() {
   const insets = useSafeAreaInsets();
   const routines = useRoutines();
 
+  const editRoutine = (id: number) =>
+    router.push({ pathname: "/routine/[id]/edit", params: { id: String(id) } });
   const openRoutine = (id: number) =>
     router.push({ pathname: "/routine/[id]", params: { id: String(id) } });
 
@@ -37,7 +39,7 @@ export default function Index() {
             name={item.name}
             exerciseCount={item.exerciseCount}
             lastPerformedAt={item.lastPerformedAt}
-            onPress={() => openRoutine(item.id)}
+            onPress={() => editRoutine(item.id)}
             onStart={() => openRoutine(item.id)}
           />
         )}
