@@ -15,6 +15,7 @@ export default function NewExercice() {
   const insets = useSafeAreaInsets();
   const [name, setName] = useState("");
   const [measuredBy, setMeasuredBy] = useState<MeasuredBy>(MeasuredBy.Reps);
+  const [note, setNote] = useState("");
 
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
@@ -45,9 +46,13 @@ export default function NewExercice() {
             '"Other" exercises log a free-form note per set (distance, load, etc.).'
           }
         />
-        <Text className="font-archivo-bold text-3xl px-4 text-text">
-          Exercice form
-        </Text>
+        <VTextInput
+          value={note}
+          onChangeText={setNote}
+          placeholder="About this exercice..."
+          label="Notes"
+          multiline
+        />
       </View>
     </View>
   );
