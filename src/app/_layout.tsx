@@ -9,12 +9,6 @@ import migrations from "@/db/drizzle/migrations";
 import { seedIfEmpty } from "@/db/seed";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 
-// import {
-//   DarkTheme,
-//   DefaultTheme,
-//   ThemeProvider,
-// } from "@react-navigation/native";
-// import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
 export default function RootLayout() {
@@ -48,30 +42,9 @@ export default function RootLayout() {
   if ((!loaded && !error) || !migrated) {
     return null;
   }
-  return (
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
-  );
+  return <Stack screenOptions={{ headerShown: false }}></Stack>;
 }
 
 export const unstable_settings = {
   anchor: "(tabs)",
 };
-
-// export default function RootLayout() {
-//   const colorScheme = useColorScheme();
-//
-//   return (
-//     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-//       <Stack>
-//         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-//         <Stack.Screen
-//           name="modal"
-//           options={{ presentation: "modal", title: "Modal" }}
-//         />
-//       </Stack>
-//       <StatusBar style="auto" />
-//     </ThemeProvider>
-//   );
-// }
