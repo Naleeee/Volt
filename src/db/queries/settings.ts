@@ -28,8 +28,13 @@ function merge(rows: { key: string; value: string }[]): Settings {
   const result = { ...DEFAULTS };
   for (const { key, value } of rows) {
     const field = settingsSchema.shape[key as keyof Settings];
-    const parsed = field?.safeParse(JSON.parse(value));
-    if (parsed?.success) Object.assign(result, { [key]: parsed.data });
+    if (!field) continue;
+    try {
+      const parsed = field.safeParse(JSON.parse(value));
+      if (parsed.success) Object.assign(result, { [key]: parsed.data });
+    } catch {
+      // Ignore invalid JSON and keep the default.
+    }
   }
   return result;
 }
