@@ -1,20 +1,26 @@
 import { Pressable, Image, Text, View } from "react-native";
 import { MeasuredBy } from "@/lib/enums";
 import TypeBadge from "./TypeBadge";
+import { router } from "expo-router";
 
 interface ExerciseCardProps {
+  exerciseId: number;
   exerciseName: string;
   imageUrl?: string;
   exerciseType: MeasuredBy;
 }
 
 export default function ExerciseCard({
+  exerciseId,
   exerciseName,
   imageUrl,
   exerciseType,
 }: ExerciseCardProps) {
   return (
-    <Pressable className="flex-1 bg-bg h-[180px]">
+    <Pressable
+      onPress={() => router.push(`/exercise/${exerciseId}`)}
+      className="flex-1 bg-bg h-[180px]"
+    >
       <View className="flex-row items-center justify-center h-[100px] bg-card2 border border-muted border-dashed rounded-t-3xl">
         {imageUrl ? (
           <Image
