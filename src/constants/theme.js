@@ -10,6 +10,7 @@ const colors = {
   "text-inverted": "#0B0C0F",
   muted: "#8C92A0",
   danger: "#FF5C39",
+  time: "#7FD8FF",
 };
 
 module.exports = { colors };
