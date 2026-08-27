@@ -2,7 +2,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import DraggableFlatList, {
+  ScaleDecorator,
+  type RenderItemParams,
+} from "react-native-draggable-flatlist";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DashedButton from "@/components/UI/DashedButton";
 import FormHeader from "@/components/UI/FormHeader";
@@ -15,6 +19,8 @@ import {
 import { toast } from "@/lib/toast";
 import ExercisePickerModal from "./ExercisePickerModal";
 import RoutineExerciseCard, { type TargetKey } from "./RoutineExerciseCard";
+
+type Field = RoutineFormValues["entries"][number] & { id: string };
 
 type Props = {
   title: string;
@@ -34,7 +40,7 @@ export default function RoutineForm({ title, initial, onSave }: Props) {
     resolver: zodResolver(routineFormSchema),
     defaultValues: initial,
   });
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields, append, remove, update, replace } = useFieldArray({
     control,
     name: "entries",
   });
@@ -59,8 +65,12 @@ export default function RoutineForm({ title, initial, onSave }: Props) {
         onSave={submit}
         saving={isSubmitting}
       />
-      <FlatList
+      <DraggableFlatList<Field>
         data={fields}
+        containerStyle={{ flex: 1 }}
+        onDragEnd={({ data }) =>
+          replace(data.map(({ id: _id, ...entry }) => entry))
+        }
         keyExtractor={(field) => field.id}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
@@ -86,19 +96,33 @@ export default function RoutineForm({ title, initial, onSave }: Props) {
                 />
               )}
             />
-            <Text className="font-archivo-bold text-sm tracking-[1.5px] text-muted mt-4 px-4">
-              EXERCISES · {fields.length}
-            </Text>
+            <View className="flex-row items-baseline justify-between mt-4 px-4">
+              <Text className="font-archivo-bold text-sm tracking-[1.5px] text-muted">
+                EXERCISES · {fields.length}
+              </Text>
+            </View>
           </View>
         }
-        renderItem={({ item, index }) => (
-          <RoutineExerciseCard
-            entry={item}
-            onChange={(patch) => update(index, { ...item, ...patch })}
-            onRemove={() => remove(index)}
-            error={firstEntryError(errors.entries?.[index])}
-          />
-        )}
+        renderItem={({
+          item,
+          getIndex,
+          drag,
+          isActive,
+        }: RenderItemParams<Field>) => {
+          const index = getIndex() ?? 0;
+          return (
+            <ScaleDecorator>
+              <RoutineExerciseCard
+                entry={item}
+                onChange={(patch) => update(index, { ...item, ...patch })}
+                onRemove={() => remove(index)}
+                onDrag={drag}
+                dragging={isActive}
+                error={firstEntryError(errors.entries?.[index])}
+              />
+            </ScaleDecorator>
+          );
+        }}
         ListFooterComponent={
           <View className="gap-2 mt-2">
             <DashedButton

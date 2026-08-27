@@ -1,4 +1,4 @@
-import { X } from "lucide-react-native";
+import { GripVertical, X } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import TypeBadge from "@/components/exercises/TypeBadge";
@@ -12,32 +12,60 @@ export type TargetKey =
   | "targetTimeSec"
   | "targetWeightKg";
 
-const TYPE_STYLE: Record<MeasuredBy, { edge: string; label: string }> = {
-  [MeasuredBy.Reps]: { edge: "border-l-accent", label: "text-accent" },
-  [MeasuredBy.Time]: { edge: "border-l-time", label: "text-time" },
-  [MeasuredBy.Other]: { edge: "border-l-muted", label: "text-muted" },
+const TYPE_STYLE: Record<MeasuredBy, { edge: string; ring: string; label: string }> = {
+  [MeasuredBy.Reps]: { edge: "border-l-accent", ring: "border-accent", label: "text-accent" },
+  [MeasuredBy.Time]: { edge: "border-l-time", ring: "border-time", label: "text-time" },
+  [MeasuredBy.Other]: { edge: "border-l-muted", ring: "border-muted", label: "text-muted" },
 };
 
 type Props = {
   entry: RoutineEntry;
   onChange: (patch: Partial<RoutineEntry>) => void;
   onRemove: () => void;
+  onDrag?: () => void;
+  dragging?: boolean;
   error?: string;
 };
 
-export default function RoutineExerciseCard({ entry, onChange, onRemove, error }: Props) {
+export default function RoutineExerciseCard({
+  entry,
+  onChange,
+  onRemove,
+  onDrag,
+  dragging = false,
+  error,
+}: Props) {
   const type = TYPE_STYLE[entry.measuredBy];
   const hasWeight = entry.targetWeightKg !== null;
 
   return (
-    <View className={`bg-card border border-line border-l-[3px] ${type.edge} rounded-[18px] p-2.5`}>
+    <View
+      className={`bg-card border ${dragging ? type.ring : "border-line"} border-l-[3px] ${type.edge} rounded-[18px] p-2.5`}
+    >
       <View className="flex-row items-center gap-3">
+        {onDrag ? (
+          <Pressable
+            onLongPress={onDrag}
+            delayLongPress={120}
+            accessibilityRole="button"
+            accessibilityLabel={`Reorder ${entry.name}`}
+            hitSlop={8}
+            className="-mr-1.5"
+          >
+            <GripVertical size={18} color={colors.muted} />
+          </Pressable>
+        ) : null}
         <View className="w-12 h-12 rounded-[11px] bg-card2" />
-        <View className="flex-1 flex-row items-center gap-2">
-          <Text className="font-archivo-bold text-[15px] text-text shrink" numberOfLines={1}>
-            {entry.name}
-          </Text>
-          <TypeBadge measuredBy={entry.measuredBy} />
+        <View className="flex-1">
+          <View className="flex-row items-center gap-2">
+            <Text className="font-archivo-bold text-[15px] text-text shrink" numberOfLines={1}>
+              {entry.name}
+            </Text>
+            <TypeBadge measuredBy={entry.measuredBy} />
+          </View>
+          {onDrag ? (
+            <Text className="font-archivo text-xs text-muted mt-0.5">hold to reorder</Text>
+          ) : null}
         </View>
         <Pressable
           onPress={onRemove}

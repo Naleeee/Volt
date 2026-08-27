@@ -18,7 +18,7 @@ Legend: **[v1]** ship first · **[v2]** later, don't build now.
 ## Routines (1, 2)
 
 - **[v1]** Routine list on Home: name, exercise count, last performed, prominent Start button, "New routine".
-- **[v1]** Routine builder (create / edit) — *not in the design yet, design it before building*: pick exercises from the library, drag to reorder, set targets per exercise (sets × reps or sets × seconds, optional weight).
+- **[v1]** Routine builder (create / edit): pick exercises from the library, drag to reorder, set targets per exercise (sets × reps or sets × seconds, optional weight in kg). The same exercise can appear more than once, each entry with its own targets. **Weight is per hand for dumbbell exercises** (barbell / machine weights are the total load) — decided once, labelled in the builder.
 - **[v1]** Routine detail: ordered exercises with thumbnails and targets, estimated duration, last performed, sticky "Start workout".
 - **[v2]** Duplicate routine.
 

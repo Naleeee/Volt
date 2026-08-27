@@ -225,25 +225,25 @@ The numbering follows the design's screen order, not the dependency graph. Every
 **Critical path** (strictly sequential, nothing here parallelizes):
 
 ```
-#3 schema ─► #6 exercise form ─► #8 library grid ─► #11 routine builder ─► #13 routine detail ─► #14 session engine ─► #15 checklist
+#3 schema ─► #6 exercise form ─► #8 library grid ─► #12 routine builder ─► #13 routine detail ─► #14 session engine ─► #15 checklist
                                                           ▲
                                        #10 design gaps ───┘  (also feeds #14, #18, #29)
 ```
 
 **Where the numbering misleads:**
 
-- `#10` (design gaps) is numbered after the Library issues but blocks `#11` — do it right after `#3`, not when you reach it.
+- `#10` (design gaps) is numbered after the Library issues but blocks `#12` — do it right after `#3`, not when you reach it.
 - `#7` (media pipeline) is a dead end: nothing depends on it. Push it to the end; it's the heaviest Library item.
-- `#4` (formatting) and `#5` (settings store) are small and dependency-free but needed early: `#5` blocks `#19` and `#26`, `#4` is used from `#11` onward.
+- `#4` (formatting) and `#5` (settings store) are small and dependency-free but needed early: `#5` blocks `#19` and `#26`, `#4` is used from `#12` onward.
 
 **Recommended order:**
 
 | Phase | Issues | Note |
 |---|---|---|
 | Foundation wrap-up | #3 → #5, #4 | small; unblock later work |
-| Design | #10 | before #11 — the builder has no artboard |
+| Design | #10 | before #12 — done, the builder artboard (2b) is on the canvas |
 | Library | #6 → #8 → #9 | skip #7 for now |
-| Routines | #11 → #13 → #12 | detail first, #14 needs it |
+| Routines | #12 → #13 | builder + Home list (#11 was merged into #12), then detail — #14 needs it |
 | Session core | #14 → #15 → #16 → #17 → #18 → #19 | usable workout tracker after #19 |
 | Session extras | #22, #23, #24, #21, #20 | all leaves — any order |
 | Home & Settings | #25, #26 → #28, #27 | #27 only needs #3 but is pointless without history |
