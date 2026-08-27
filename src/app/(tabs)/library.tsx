@@ -1,6 +1,19 @@
+import ExerciseCard from "@/components/exercises/ExerciseCard";
+import { MeasuredBy } from "@/lib/enums";
 import { router } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const EXAMPLES = [
+  { name: "Bench Press", measuredBy: MeasuredBy.Reps },
+  { name: "Plank", measuredBy: MeasuredBy.Time },
+  { name: "Farmer's Carry", measuredBy: MeasuredBy.Other },
+  { name: "Back Squat", measuredBy: MeasuredBy.Reps },
+  { name: "Wall Sit", measuredBy: MeasuredBy.Time },
+  { name: "Pull-Up", measuredBy: MeasuredBy.Reps },
+  { name: "Push-Up", measuredBy: MeasuredBy.Reps },
+  { name: "Dead Hang", measuredBy: MeasuredBy.Time },
+];
 
 export default function Index() {
   const insets = useSafeAreaInsets();
@@ -20,6 +33,16 @@ export default function Index() {
           New Exercise
         </Text>
       </Pressable>
+      <FlatList
+        data={EXAMPLES}
+        keyExtractor={(item) => item.name}
+        numColumns={2}
+        columnWrapperStyle={{ gap: 16 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16, gap: 16 }}
+        renderItem={({ item }) => (
+          <ExerciseCard exerciseName={item.name} exerciseType={item.measuredBy} />
+        )}
+      />
     </View>
   );
 }
