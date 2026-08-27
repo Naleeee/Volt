@@ -6,7 +6,11 @@ import { db } from "../client";
 import { exercises } from "../schema";
 
 export const exerciseFormSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(100),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Name is required")
+    .max(100, "Name must be at most 100 characters"),
   measuredBy: z.enum(MEASURED_BY),
   notes: z.string().trim().max(500),
 });
