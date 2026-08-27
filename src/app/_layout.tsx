@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import Toast from "@/components/Toast";
 import "../../global.css";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
@@ -42,7 +43,12 @@ export default function RootLayout() {
   if ((!loaded && !error) || !migrated) {
     return null;
   }
-  return <Stack screenOptions={{ headerShown: false }}></Stack>;
+  return (
+    <>
+      <Stack screenOptions={{ headerShown: false }} />
+      <Toast />
+    </>
+  );
 }
 
 export const unstable_settings = {
