@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNull, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db } from "../client";
 import {
@@ -160,6 +160,34 @@ export function useLastPerformedSet(
     [exerciseId, excludeSessionId],
   );
   return data[0]?.set;
+}
+
+export function useGhostSets(exerciseIds: number[], excludeSessionId: number): SessionSet[] {
+  const key = exerciseIds.join(",");
+  const { data } = useLiveQuery(
+    db
+      .select({ set: sessionSets, sessionId: sessions.id })
+      .from(sessionSets)
+      .innerJoin(sessions, eq(sessions.id, sessionSets.sessionId))
+      .where(
+        and(
+          inArray(sessionSets.exerciseId, exerciseIds.length ? exerciseIds : [-1]),
+          ne(sessions.id, excludeSessionId),
+          isNotNull(sessions.endedAt),
+          eq(sessionSets.skipped, false),
+        ),
+      )
+      .orderBy(desc(sessions.endedAt), asc(sessionSets.setNumber)),
+    [key, excludeSessionId],
+  );
+  const chosen = new Map<number, number>();
+  return data
+    .filter((row) => {
+      const sessionId = chosen.get(row.set.exerciseId) ?? row.sessionId;
+      chosen.set(row.set.exerciseId, sessionId);
+      return row.sessionId === sessionId;
+    })
+    .map((row) => row.set);
 }
 
 // ── writes (all synchronous on this driver) ───────────────────────────────────
