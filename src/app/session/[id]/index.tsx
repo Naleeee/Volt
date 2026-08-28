@@ -1,31 +1,38 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
-import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
+import { useState } from "react";
+import { ActivityIndicator, Alert, FlatList, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import RestBar from "@/components/sessions/RestBar";
+import {
+  CollapsedExerciseCard,
+  ExpandedExerciseCard,
+} from "@/components/sessions/SessionChecklistCard";
 import Button from "@/components/UI/Button";
 import { colors } from "@/constants/theme";
 import {
-  allocateLoggedSets,
+  deleteSet,
   finishSession,
+  groupSetsByEntry,
   logSet,
   nextPosition,
   useSession,
   useSessionSets,
 } from "@/db/queries/sessions";
+import { useSettings } from "@/db/queries/settings";
 import { formatClock } from "@/lib/format";
 import { useSessionStore } from "@/lib/session-store";
 import { useNow } from "@/lib/use-now";
 
-// Session home. Placeholder until the checklist (#15) and focus views (#16–#18) land:
-// shows the live clock and progress, and logs the next planned set with its target values.
-export default function SessionScreen() {
+export default function SessionChecklist() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const sessionId = Number(id);
   const session = useSession(sessionId);
   const sets = useSessionSets(sessionId);
+  const settings = useSettings();
   const now = useNow();
-  const end = useSessionStore((s) => s.end);
+  const { restEndsAt, startRest, clearRest, setPosition, end } = useSessionStore();
+  const [reopenedIndex, setReopenedIndex] = useState<number | null>(null);
 
   if (!session) {
     return (
@@ -35,96 +42,127 @@ export default function SessionScreen() {
     );
   }
 
-  const done = allocateLoggedSets(session.entries, sets);
+  const grouped = groupSetsByEntry(session.entries, sets);
+  const done = grouped.map((g) => g.length);
   const position = nextPosition(session.entries, done);
-  const planned = session.entries.reduce((n, e) => n + e.targetSets, 0);
   const elapsedSec = Math.max(0, Math.floor((now - session.startedAt) / 1000));
+  const restRemainingSec = restEndsAt ? Math.ceil((restEndsAt - now) / 1000) : 0;
+  const resting = restRemainingSec > 0;
 
-  const logNext = () => {
+  const logCurrentSet = (setNumber: number) => {
     if (!position) return;
     const entry = session.entries[position.exerciseIndex];
     logSet({
       sessionId,
       exerciseId: entry.exerciseId,
-      setNumber: position.setNumber,
+      setNumber,
       reps: entry.targetReps,
       timeSec: entry.targetTimeSec,
       weightKg: entry.targetWeightKg,
     });
+    const lastSetOfExercise = setNumber >= entry.targetSets;
+    const lastExercise = position.exerciseIndex === session.entries.length - 1;
+    if (lastSetOfExercise) setPosition(position.exerciseIndex + 1, 1);
+    else setPosition(position.exerciseIndex, setNumber + 1);
+    if (settings.autostartRestTimer && !(lastSetOfExercise && lastExercise)) {
+      startRest(lastSetOfExercise ? settings.restBetweenExercisesSec : settings.restBetweenSetsSec);
+    }
+  };
+
+  // Only the last logged set of the current exercise can be undone, so set numbers stay contiguous.
+  const unlogSet = (setId: number) => {
+    deleteSet(setId);
+    clearRest();
   };
 
   const finish = () => {
-    finishSession(sessionId);
-    end();
-    router.dismissTo("/");
+    const complete = () => {
+      finishSession(sessionId);
+      end();
+      router.dismissTo("/");
+    };
+    if (!position) return complete();
+    const remaining = session.entries.reduce((n, e) => n + e.targetSets, 0) - sets.length;
+    Alert.alert("Finish early?", `${remaining} planned ${remaining === 1 ? "set is" : "sets are"} still open.`, [
+      { text: "Keep going", style: "cancel" },
+      { text: "Finish", style: "destructive", onPress: complete },
+    ]);
   };
 
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
       <View className="flex-row items-center justify-between px-5 pt-3">
-        <Pressable
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel="Back to Home"
-          className="w-[38px] h-[38px] rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
-        >
-          <ChevronLeft size={20} color={colors.text} />
-        </Pressable>
-        <Text className="font-archivo-bold text-[11px] tracking-[1.5px] text-muted">
-          {session.routineName.toUpperCase()}
-        </Text>
-        <Text
-          className="font-archivo-bold text-base text-text w-[60px] text-right"
-          style={{ fontVariant: ["tabular-nums"] }}
-        >
-          {formatClock(elapsedSec)}
-        </Text>
+        <View>
+          <Text className="font-archivo-bold text-[11px] tracking-[1.5px] text-muted">
+            {session.routineName.toUpperCase()}
+          </Text>
+          <Text
+            className="font-archivo-black text-[22px] text-text mt-0.5"
+            style={{ fontVariant: ["tabular-nums"] }}
+          >
+            {formatClock(elapsedSec)}
+          </Text>
+        </View>
+        <Button label="Finish" size="sm" onPress={finish} />
       </View>
-      <Text className="font-archivo text-[13px] text-muted text-center mt-2">
-        {sets.length} of {planned} sets
-      </Text>
       <FlatList
         data={session.entries}
         keyExtractor={(entry, index) => `${entry.exerciseId}-${index}`}
-        contentContainerStyle={{ padding: 20, paddingBottom: 160, gap: 8 }}
+        contentContainerStyle={{ padding: 20, paddingTop: 14, paddingBottom: 120, gap: 8 }}
         renderItem={({ item, index }) => {
+          if (position?.exerciseIndex === index) {
+            return (
+              <ExpandedExerciseCard
+                entry={item}
+                loggedSets={grouped[index]}
+                current
+                restHint={
+                  settings.autostartRestTimer
+                    ? `Tap the box to log a set · rest ${settings.restBetweenSetsSec} s auto-starts`
+                    : "Tap the box to log a set"
+                }
+                onLogSet={logCurrentSet}
+                onUnlogSet={unlogSet}
+              />
+            );
+          }
           const complete = done[index] >= item.targetSets;
-          const current = position?.exerciseIndex === index;
+          if (complete && reopenedIndex === index) {
+            return (
+              <ExpandedExerciseCard
+                entry={item}
+                loggedSets={grouped[index]}
+                current={false}
+                onLogSet={() => {}}
+                onUnlogSet={unlogSet}
+                onCollapse={() => setReopenedIndex(null)}
+              />
+            );
+          }
           return (
-            <View
-              className={`flex-row items-center gap-3 bg-card border ${current ? "border-accent" : "border-line"} rounded-[18px] px-4 py-3`}
-            >
-              <Text
-                className={`flex-1 font-archivo-bold text-[15px] ${complete ? "text-muted line-through" : "text-text"}`}
-              >
-                {item.name}
-              </Text>
-              <Text
-                className={`font-archivo-bold text-sm ${complete ? "text-accent" : "text-muted"}`}
-                style={{ fontVariant: ["tabular-nums"] }}
-              >
-                {done[index]}/{item.targetSets}
-              </Text>
-            </View>
+            <CollapsedExerciseCard
+              entry={item}
+              done={done[index]}
+              onPress={complete ? () => setReopenedIndex(index) : undefined}
+            />
           );
         }}
+        ListFooterComponent={
+          position ? null : (
+            <Text className="font-archivo text-sm text-muted text-center mt-4">
+              {"All sets logged — finish when you're ready."}
+            </Text>
+          )
+        }
       />
-      <View
-        className="absolute left-0 right-0 bottom-0 px-5 pt-4 bg-bg gap-2.5"
-        style={{ paddingBottom: insets.bottom + 16 }}
-      >
-        {position ? (
-          <Button
-            label={`Log set ${position.setNumber} · ${session.entries[position.exerciseIndex].name}`}
-            onPress={logNext}
-          />
-        ) : null}
-        <Button
-          variant={position ? "outline" : "primary"}
-          label={position ? "Finish early" : "Finish workout"}
-          onPress={finish}
-        />
-      </View>
+      {resting ? (
+        <View
+          className="absolute left-0 right-0 bottom-0 px-5 pt-3.5 bg-bg"
+          style={{ paddingBottom: insets.bottom + 16 }}
+        >
+          <RestBar remainingSec={restRemainingSec} onSkip={clearRest} />
+        </View>
+      ) : null}
     </View>
   );
 }
