@@ -1,0 +1,227 @@
+import { asc, desc, eq, isNull, sql } from "drizzle-orm";
+import { useLiveQuery } from "drizzle-orm/expo-sqlite";
+import { db } from "../client";
+import {
+  exercises,
+  routineExercises,
+  routines,
+  sessionSets,
+  sessions,
+  type SessionSet,
+} from "../schema";
+
+export type ActiveSession = {
+  id: number;
+  routineId: number;
+  routineName: string;
+  startedAt: number;
+  plannedSets: number;
+  loggedSets: number;
+  lastSetAt: number | null;
+};
+
+// Home resume bar. `undefined` while loading, `null` when no workout is in progress.
+// Two live queries: sessions for the row, session_sets for the progress (useLiveQuery watches one table each).
+export function useActiveSession(): ActiveSession | null | undefined {
+  const active = useLiveQuery(
+    db
+      .select({
+        id: sessions.id,
+        routineId: sessions.routineId,
+        startedAt: sessions.startedAt,
+        routineName: routines.name,
+        plannedSets: sql<number>`(select coalesce(sum(re.target_sets), 0) from routine_exercises re where re.routine_id = ${sessions.routineId})`.mapWith(Number),
+      })
+      .from(sessions)
+      .innerJoin(routines, eq(routines.id, sessions.routineId))
+      .where(isNull(sessions.endedAt))
+      .orderBy(desc(sessions.startedAt))
+      .limit(1),
+  );
+  const sessionId = active.data[0]?.id ?? -1;
+  const progress = useLiveQuery(
+    db
+      .select({
+        loggedSets: sql<number>`count(*)`.mapWith(Number),
+        lastSetAt: sql<number | null>`max(${sessionSets.completedAt})`,
+      })
+      .from(sessionSets)
+      .where(eq(sessionSets.sessionId, sessionId)),
+    [sessionId],
+  );
+
+  if (!active.updatedAt) return undefined;
+  const row = active.data[0];
+  if (!row) return null;
+  return {
+    ...row,
+    loggedSets: progress.data[0]?.loggedSets ?? 0,
+    lastSetAt: progress.data[0]?.lastSetAt ?? null,
+  };
+}
+
+export type SessionEntry = {
+  exerciseId: number;
+  name: string;
+  measuredBy: (typeof exercises.$inferSelect)["measuredBy"];
+  targetSets: number;
+  targetReps: number | null;
+  targetTimeSec: number | null;
+  targetWeightKg: number | null;
+};
+
+export type SessionDetail = {
+  id: number;
+  routineId: number;
+  routineName: string;
+  startedAt: number;
+  endedAt: number | null;
+  entries: SessionEntry[];
+};
+
+// Session screens: the session row plus the routine's entries in order. `undefined` until both loaded.
+export function useSession(sessionId: number): SessionDetail | undefined {
+  const session = useLiveQuery(
+    db
+      .select({
+        id: sessions.id,
+        routineId: sessions.routineId,
+        routineName: routines.name,
+        startedAt: sessions.startedAt,
+        endedAt: sessions.endedAt,
+      })
+      .from(sessions)
+      .innerJoin(routines, eq(routines.id, sessions.routineId))
+      .where(eq(sessions.id, sessionId)),
+    [sessionId],
+  );
+  const routineId = session.data[0]?.routineId ?? -1;
+  const entries = useLiveQuery(
+    db
+      .select({
+        exerciseId: routineExercises.exerciseId,
+        name: exercises.name,
+        measuredBy: exercises.measuredBy,
+        targetSets: routineExercises.targetSets,
+        targetReps: routineExercises.targetReps,
+        targetTimeSec: routineExercises.targetTimeSec,
+        targetWeightKg: routineExercises.targetWeightKg,
+      })
+      .from(routineExercises)
+      .innerJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
+      .where(eq(routineExercises.routineId, routineId))
+      .orderBy(asc(routineExercises.position)),
+    [routineId],
+  );
+
+  const row = session.data[0];
+  if (!session.updatedAt || !entries.updatedAt || !row) return undefined;
+  return {
+    ...row,
+    entries: entries.data.map((e) => ({ ...e, targetSets: e.targetSets ?? 1 })),
+  };
+}
+
+export function useSessionSets(sessionId: number): SessionSet[] {
+  const { data } = useLiveQuery(
+    db
+      .select()
+      .from(sessionSets)
+      .where(eq(sessionSets.sessionId, sessionId))
+      .orderBy(asc(sessionSets.completedAt)),
+    [sessionId],
+  );
+  return data;
+}
+
+// ── writes (all synchronous on this driver) ───────────────────────────────────
+
+export function startSession(routineId: number) {
+  const open = db
+    .select({ id: sessions.id })
+    .from(sessions)
+    .where(isNull(sessions.endedAt))
+    .limit(1)
+    .get();
+  if (open) throw new Error("A workout is already in progress");
+  return db
+    .insert(sessions)
+    .values({ routineId, startedAt: Date.now() })
+    .returning({ id: sessions.id })
+    .get();
+}
+
+export type LogSetInput = {
+  sessionId: number;
+  exerciseId: number;
+  setNumber: number;
+  reps?: number | null;
+  timeSec?: number | null;
+  weightKg?: number | null;
+  note?: string | null;
+};
+
+// Every set is written the moment it is logged — the store never holds unsaved workout data.
+export function logSet(input: LogSetInput) {
+  return db
+    .insert(sessionSets)
+    .values({ ...input, completedAt: Date.now() })
+    .returning({ id: sessionSets.id })
+    .get();
+}
+
+export function finishSession(sessionId: number) {
+  db.update(sessions)
+    .set({ endedAt: Date.now() })
+    .where(eq(sessions.id, sessionId))
+    .run();
+}
+
+// Cascades to session_sets (foreign_keys is ON in client.ts).
+export function discardSession(sessionId: number) {
+  db.delete(sessions).where(eq(sessions.id, sessionId)).run();
+}
+
+// ── position ──────────────────────────────────────────────────────────────────
+
+export type SessionPosition = { exerciseIndex: number; setNumber: number };
+
+// Logged sets only carry exercise_id, and the same exercise can appear twice in a routine:
+// hand sets to entries in routine order, each entry taking at most its target.
+export function allocateLoggedSets(
+  entries: Pick<SessionEntry, "exerciseId" | "targetSets">[],
+  sets: Pick<SessionSet, "exerciseId">[],
+): number[] {
+  const remaining = new Map<number, number>();
+  for (const s of sets) remaining.set(s.exerciseId, (remaining.get(s.exerciseId) ?? 0) + 1);
+  return entries.map((e) => {
+    const done = Math.min(e.targetSets, remaining.get(e.exerciseId) ?? 0);
+    remaining.set(e.exerciseId, (remaining.get(e.exerciseId) ?? 0) - done);
+    return done;
+  });
+}
+
+// First entry with sets left, or null when every planned set is logged.
+export function nextPosition(
+  entries: Pick<SessionEntry, "targetSets">[],
+  done: number[],
+): SessionPosition | null {
+  const exerciseIndex = done.findIndex((d, i) => d < entries[i].targetSets);
+  return exerciseIndex === -1 ? null : { exerciseIndex, setNumber: done[exerciseIndex] + 1 };
+}
+
+export function getResumePosition(sessionId: number, routineId: number) {
+  const entries = db
+    .select({ exerciseId: routineExercises.exerciseId, targetSets: routineExercises.targetSets })
+    .from(routineExercises)
+    .where(eq(routineExercises.routineId, routineId))
+    .orderBy(asc(routineExercises.position))
+    .all()
+    .map((e) => ({ ...e, targetSets: e.targetSets ?? 1 }));
+  const sets = db
+    .select({ exerciseId: sessionSets.exerciseId })
+    .from(sessionSets)
+    .where(eq(sessionSets.sessionId, sessionId))
+    .all();
+  return nextPosition(entries, allocateLoggedSets(entries, sets));
+}

@@ -66,3 +66,4 @@ export const settings = sqliteTable("settings", {
 
 export type Exercise = typeof exercises.$inferSelect;
 export type NewExercise = typeof exercises.$inferInsert;
+export type SessionSet = typeof sessionSets.$inferSelect;
