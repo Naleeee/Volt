@@ -1,7 +1,14 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, Minus, Pause, Play, Plus } from "lucide-react-native";
 import { useEffect, useState, type ReactNode } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TimerRing from "@/components/sessions/TimerRing";
 import Button from "@/components/UI/Button";
@@ -11,6 +18,7 @@ import {
   finishSession,
   groupSetsByEntry,
   logSet,
+  useLastPerformedSet,
   useSession,
   useSessionSets,
   type SessionEntry,
@@ -71,6 +79,7 @@ export default function SetFocus() {
     reps?: number | null;
     timeSec?: number | null;
     weightKg?: number | null;
+    note?: string | null;
   }) => {
     logSet({ sessionId, exerciseId: entry.exerciseId, setNumber, ...values });
     const last = setNumber >= entry.targetSets;
@@ -237,24 +246,16 @@ export default function SetFocus() {
           onSkip={skip}
         />
       ) : (
-        <>
-          <TitleBlock
-            entry={entry}
-            setNumber={setNumber}
-            logged={logged}
-            subtitle="Free-form set"
-          />
-          <View className="flex-1 items-center justify-center">
-            <Text className="font-archivo text-sm text-muted text-center">
-              Free-form sets get their own view soon.
-            </Text>
-          </View>
-          {footer(
-            <Button label="Back to list" onPress={() => router.back()} />,
-            "Skip set",
-            skip,
-          )}
-        </>
+        <OtherFocus
+          entry={entry}
+          setNumber={setNumber}
+          logged={logged}
+          sessionId={sessionId}
+          autoRest={settings.autostartRestTimer}
+          onComplete={complete}
+          footer={footer}
+          onSkip={skip}
+        />
       )}
     </View>
   );
@@ -269,6 +270,7 @@ type FocusProps = {
     reps?: number | null;
     timeSec?: number | null;
     weightKg?: number | null;
+    note?: string | null;
   }) => void;
   onSkip: () => void;
   footer: (
@@ -347,7 +349,7 @@ function LastSetLine({
   unit,
 }: {
   set: SessionSet | undefined;
-  unit: "reps" | "sec";
+  unit: "reps" | "sec" | "note";
 }) {
   if (!set)
     return (
@@ -355,15 +357,15 @@ function LastSetLine({
         {" "}
       </Text>
     );
-  const value = unit === "reps" ? set.reps : set.timeSec;
+  const value =
+    unit === "reps" ? set.reps : unit === "sec" ? set.timeSec : set.note;
   const weight =
     set.weightKg !== null ? ` @ ${formatWeight(set.weightKg)}` : "";
   return (
     <Text className="font-archivo text-[13px] text-muted text-center mb-3.5">
       Set {set.setNumber} ·{" "}
       <Text className="font-archivo-bold text-text">
-        {value} {unit}
-        {weight}
+        {unit === "note" ? value : `${value} ${unit}${weight}`}
       </Text>{" "}
       <Text className="text-accent">✓</Text>
     </Text>
@@ -461,8 +463,6 @@ function RepsFocus({
   );
 }
 
-// ── time (artboard 5d) ────────────────────────────────────────────────────────
-
 function TimeFocus({
   entry,
   setNumber,
@@ -476,7 +476,8 @@ function TimeFocus({
     useSessionStore();
   const targetSec = entry.targetTimeSec ?? 0;
   const running = holdStartedAt !== null;
-  const elapsedMs = holdElapsedMs + (running ? Math.max(0, now - holdStartedAt) : 0);
+  const elapsedMs =
+    holdElapsedMs + (running ? Math.max(0, now - holdStartedAt) : 0);
   const remainingMs = Math.max(0, targetSec * 1000 - elapsedMs);
   const reachedTarget = running && remainingMs <= 0;
   const lastLogged = [...logged].reverse().find((s) => !s.skipped);
@@ -538,6 +539,72 @@ function TimeFocus({
                 weightKg: entry.targetWeightKg,
               })
           : onSkip,
+      )}
+    </>
+  );
+}
+
+function OtherFocus({
+  entry,
+  setNumber,
+  logged,
+  sessionId,
+  autoRest,
+  onComplete,
+  onSkip,
+  footer,
+}: FocusProps & { sessionId: number }) {
+  const [note, setNote] = useState("");
+  const lastLogged = [...logged].reverse().find((s) => !s.skipped);
+  const lastSession = useLastPerformedSet(entry.exerciseId, sessionId);
+  const chips = [
+    { label: "Same as last set", value: lastLogged?.note ?? null },
+    { label: "Same as last session", value: lastSession?.note ?? null },
+  ];
+
+  return (
+    <>
+      <TitleBlock
+        entry={entry}
+        setNumber={setNumber}
+        logged={logged}
+        subtitle="free-form · log what you did"
+      />
+      <TextInput
+        value={note}
+        onChangeText={setNote}
+        multiline
+        textAlignVertical="top"
+        placeholder="e.g. 2 × 20 m @ 32 kg per hand"
+        placeholderTextColor={colors.muted}
+        accessibilityLabel="Set note"
+        className="bg-card2 border border-other rounded-2xl min-h-[84px] px-4 py-3.5 mt-3.5 font-archivo-semibold text-[17px] leading-[26px] text-text"
+        style={{ includeFontPadding: false }}
+      />
+      <View className="flex-row gap-2 mt-2.5">
+        {chips.map((chip) => (
+          <Pressable
+            key={chip.label}
+            disabled={!chip.value}
+            onPress={() => chip.value && setNote(chip.value)}
+            accessibilityRole="button"
+            className={`rounded-full bg-card2 border border-line px-3.5 py-2 active:opacity-80 ${chip.value ? "" : "opacity-40"}`}
+          >
+            <Text className="font-archivo-bold text-xs text-muted">
+              {chip.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      <View className="flex-1" />
+      <LastSetLine set={lastLogged} unit="note" />
+      {footer(
+        <Button
+          label={autoRest ? "Log set · start rest" : "Log set"}
+          onPress={() => onComplete({ note: note.trim() || null })}
+        />,
+        "Skip set",
+        onSkip,
       )}
     </>
   );

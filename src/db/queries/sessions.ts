@@ -1,4 +1,4 @@
-import { asc, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, ne, sql } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db } from "../client";
 import {
@@ -30,7 +30,10 @@ export function useActiveSession(): ActiveSession | null | undefined {
         routineId: sessions.routineId,
         startedAt: sessions.startedAt,
         routineName: routines.name,
-        plannedSets: sql<number>`(select coalesce(sum(re.target_sets), 0) from routine_exercises re where re.routine_id = ${sessions.routineId})`.mapWith(Number),
+        plannedSets:
+          sql<number>`(select coalesce(sum(re.target_sets), 0) from routine_exercises re where re.routine_id = ${sessions.routineId})`.mapWith(
+            Number,
+          ),
       })
       .from(sessions)
       .innerJoin(routines, eq(routines.id, sessions.routineId))
@@ -133,6 +136,30 @@ export function useSessionSets(sessionId: number): SessionSet[] {
   return data;
 }
 
+// Most recent non-skipped set of this exercise from another session — "same as last session" and ghost values.
+export function useLastPerformedSet(
+  exerciseId: number,
+  excludeSessionId: number,
+): SessionSet | undefined {
+  const { data } = useLiveQuery(
+    db
+      .select({ set: sessionSets })
+      .from(sessionSets)
+      .innerJoin(sessions, eq(sessions.id, sessionSets.sessionId))
+      .where(
+        and(
+          eq(sessionSets.exerciseId, exerciseId),
+          ne(sessionSets.sessionId, excludeSessionId),
+          eq(sessionSets.skipped, false),
+        ),
+      )
+      .orderBy(desc(sessionSets.completedAt))
+      .limit(1),
+    [exerciseId, excludeSessionId],
+  );
+  return data[0]?.set;
+}
+
 // ── writes (all synchronous on this driver) ───────────────────────────────────
 
 export function startSession(routineId: number) {
@@ -197,7 +224,8 @@ export function groupSetsByEntry<S extends Pick<SessionSet, "exerciseId">>(
   sets: S[],
 ): S[][] {
   const pool = new Map<number, S[]>();
-  for (const s of sets) pool.set(s.exerciseId, [...(pool.get(s.exerciseId) ?? []), s]);
+  for (const s of sets)
+    pool.set(s.exerciseId, [...(pool.get(s.exerciseId) ?? []), s]);
   return entries.map((e) => {
     const available = pool.get(e.exerciseId) ?? [];
     const taken = available.slice(0, e.targetSets);
@@ -219,12 +247,17 @@ export function nextPosition(
   done: number[],
 ): SessionPosition | null {
   const exerciseIndex = done.findIndex((d, i) => d < entries[i].targetSets);
-  return exerciseIndex === -1 ? null : { exerciseIndex, setNumber: done[exerciseIndex] + 1 };
+  return exerciseIndex === -1
+    ? null
+    : { exerciseIndex, setNumber: done[exerciseIndex] + 1 };
 }
 
 export function getResumePosition(sessionId: number, routineId: number) {
   const entries = db
-    .select({ exerciseId: routineExercises.exerciseId, targetSets: routineExercises.targetSets })
+    .select({
+      exerciseId: routineExercises.exerciseId,
+      targetSets: routineExercises.targetSets,
+    })
     .from(routineExercises)
     .where(eq(routineExercises.routineId, routineId))
     .orderBy(asc(routineExercises.position))

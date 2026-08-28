@@ -19,7 +19,6 @@ import {
   useSessionSets,
 } from "@/db/queries/sessions";
 import { useSettings } from "@/db/queries/settings";
-import { MeasuredBy } from "@/lib/enums";
 import { formatClock } from "@/lib/format";
 import { useSessionStore } from "@/lib/session-store";
 import { useNow } from "@/lib/use-now";
@@ -127,14 +126,10 @@ export default function SessionChecklist() {
                 }
                 onLogSet={logCurrentSet}
                 onUnlogSet={unlogSet}
-                onOpenSet={
-                  item.measuredBy !== MeasuredBy.Other
-                    ? (setNumber) => {
+                onOpenSet={(setNumber) => {
                         setPosition(index, setNumber);
                         router.push({ pathname: "/session/[id]/focus", params: { id } });
-                      }
-                    : undefined
-                }
+                      }}
               />
             );
           }
