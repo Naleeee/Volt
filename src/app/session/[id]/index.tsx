@@ -125,7 +125,7 @@ export default function SessionChecklist() {
                 onLogSet={logCurrentSet}
                 onUnlogSet={unlogSet}
                 onOpenSet={
-                  item.measuredBy === MeasuredBy.Reps
+                  item.measuredBy !== MeasuredBy.Other
                     ? (setNumber) => {
                         setPosition(index, setNumber);
                         router.push({ pathname: "/session/[id]/focus", params: { id } });
