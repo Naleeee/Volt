@@ -32,7 +32,8 @@ export default function SessionChecklist() {
   const sets = useSessionSets(sessionId);
   const settings = useSettings();
   const now = useNow();
-  const { restEndsAt, startRest, clearRest, setPosition, end } = useSessionStore();
+  const { restEndsAt, restDurationSec, startRest, clearRest, setPosition, end } =
+    useSessionStore();
   const [reopenedIndex, setReopenedIndex] = useState<number | null>(null);
 
   if (!session) {
@@ -47,7 +48,9 @@ export default function SessionChecklist() {
   const done = grouped.map((g) => g.length);
   const position = nextPosition(session.entries, done);
   const elapsedSec = Math.max(0, Math.floor((now - session.startedAt) / 1000));
-  const restRemainingSec = restEndsAt ? Math.ceil((restEndsAt - now) / 1000) : 0;
+  const restRemainingSec = restEndsAt
+    ? Math.min(restDurationSec, Math.ceil((restEndsAt - now) / 1000))
+    : 0;
   const resting = restRemainingSec > 0;
 
   const logCurrentSet = (setNumber: number) => {

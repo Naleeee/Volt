@@ -476,7 +476,7 @@ function TimeFocus({
     useSessionStore();
   const targetSec = entry.targetTimeSec ?? 0;
   const running = holdStartedAt !== null;
-  const elapsedMs = holdElapsedMs + (running ? now - holdStartedAt : 0);
+  const elapsedMs = holdElapsedMs + (running ? Math.max(0, now - holdStartedAt) : 0);
   const remainingMs = Math.max(0, targetSec * 1000 - elapsedMs);
   const reachedTarget = running && remainingMs <= 0;
   const lastLogged = [...logged].reverse().find((s) => !s.skipped);

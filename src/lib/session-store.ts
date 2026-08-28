@@ -7,6 +7,7 @@ type SessionState = {
   holdStartedAt: number | null;
   holdElapsedMs: number;
   restEndsAt: number | null;
+  restDurationSec: number;
   begin: (sessionId: number) => void;
   restore: (
     sessionId: number,
@@ -30,6 +31,7 @@ const idle = {
   setNumber: 1,
   ...noHold,
   restEndsAt: null,
+  restDurationSec: 0,
 };
 
 export const useSessionStore = create<SessionState>((set) => ({
@@ -48,7 +50,10 @@ export const useSessionStore = create<SessionState>((set) => ({
     })),
   resetHold: () => set(noHold),
   startRest: (durationSec) =>
-    set({ restEndsAt: Date.now() + durationSec * 1000 }),
+    set({
+      restEndsAt: Date.now() + durationSec * 1000,
+      restDurationSec: durationSec,
+    }),
   clearRest: () => set({ restEndsAt: null }),
   end: () => set(idle),
 }));
