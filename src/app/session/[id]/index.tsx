@@ -13,6 +13,7 @@ import {
   deleteSet,
   finishSession,
   groupSetsByEntry,
+  useGhostSets,
   logSet,
   nextPosition,
   useSession,
@@ -30,6 +31,7 @@ export default function SessionChecklist() {
   const sessionId = Number(id);
   const session = useSession(sessionId);
   const sets = useSessionSets(sessionId);
+  const ghosts = useGhostSets(session?.entries.map((e) => e.exerciseId) ?? [], sessionId);
   const settings = useSettings();
   const now = useNow();
   const { restEndsAt, restDurationSec, startRest, clearRest, setPosition, end } =
@@ -45,6 +47,7 @@ export default function SessionChecklist() {
   }
 
   const grouped = groupSetsByEntry(session.entries, sets);
+  const ghostByEntry = groupSetsByEntry(session.entries, ghosts);
   const done = grouped.map((g) => g.length);
   const position = nextPosition(session.entries, done);
   const elapsedSec = Math.max(0, Math.floor((now - session.startedAt) / 1000));
@@ -119,6 +122,7 @@ export default function SessionChecklist() {
               <ExpandedExerciseCard
                 entry={item}
                 loggedSets={grouped[index]}
+                ghostSets={ghostByEntry[index]}
                 current
                 restHint={
                   settings.autostartRestTimer
@@ -140,6 +144,7 @@ export default function SessionChecklist() {
               <ExpandedExerciseCard
                 entry={item}
                 loggedSets={grouped[index]}
+                ghostSets={ghostByEntry[index]}
                 current={false}
                 onLogSet={() => {}}
                 onUnlogSet={unlogSet}
