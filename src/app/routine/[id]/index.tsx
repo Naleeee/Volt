@@ -6,9 +6,11 @@ import RoutineExerciseRow from "@/components/routines/RoutineExerciseRow";
 import Button from "@/components/UI/Button";
 import { colors } from "@/constants/theme";
 import { useRoutine } from "@/db/queries/routines";
+import { startSession } from "@/db/queries/sessions";
 import { useSettings } from "@/db/queries/settings";
 import { estimateRoutineSeconds } from "@/lib/estimate";
 import { formatEstimatedDuration, formatLastPerformedLine } from "@/lib/format";
+import { useSessionStore } from "@/lib/session-store";
 import { toast } from "@/lib/toast";
 
 export default function RoutineDetail() {
@@ -17,6 +19,7 @@ export default function RoutineDetail() {
   const routineId = Number(id);
   const routine = useRoutine(routineId);
   const settings = useSettings();
+  const begin = useSessionStore((s) => s.begin);
 
   if (!routine) {
     return (
@@ -25,6 +28,17 @@ export default function RoutineDetail() {
       </View>
     );
   }
+
+  const start = () => {
+    try {
+      const session = startSession(routineId);
+      begin(session.id);
+      router.push({ pathname: "/session/[id]", params: { id: String(session.id) } });
+    } catch (error) {
+      if (__DEV__) console.error(error);
+      toast.error("Finish or discard your current workout first.");
+    }
+  };
 
   const count = routine.entries.length;
   const subtitle = [
@@ -82,7 +96,7 @@ export default function RoutineDetail() {
           label="Start workout"
           icon={Play}
           iconFill
-          onPress={() => toast.info("Workout sessions arrive with the session engine.")}
+          onPress={start}
         />
       </View>
     </View>
