@@ -2,8 +2,8 @@ import type { LucideIcon } from "lucide-react-native";
 import { ActivityIndicator, Pressable, Text } from "react-native";
 import { colors } from "@/constants/theme";
 
-type Variant = "primary" | "time" | "outline" | "dashed";
-type Size = "sm" | "lg";
+type Variant = "primary" | "secondary" | "time" | "outline" | "dashed";
+type Size = "sm" | "md" | "lg";
 
 const VARIANTS: Record<
   Variant,
@@ -13,6 +13,11 @@ const VARIANTS: Record<
     box: "bg-accent rounded-full",
     text: "text-accent-ink",
     color: colors["accent-ink"],
+  },
+  secondary: {
+    box: "bg-card2 border border-line rounded-full",
+    text: "text-text",
+    color: colors.text,
   },
   time: {
     box: "bg-time rounded-full",
@@ -34,6 +39,7 @@ const VARIANTS: Record<
 
 const SIZES: Record<Size, { box: string; text: string; icon: number }> = {
   sm: { box: "h-10 px-5 gap-2", text: "text-sm", icon: 14 },
+  md: { box: "h-12 px-6 gap-2", text: "text-base", icon: 16 },
   lg: { box: "h-14 px-6 gap-[9px]", text: "text-lg", icon: 18 },
 };
 
