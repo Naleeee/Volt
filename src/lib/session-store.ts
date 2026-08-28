@@ -19,6 +19,7 @@ type SessionState = {
   pauseHold: () => void;
   resetHold: () => void;
   startRest: (durationSec: number) => void;
+  extendRest: (seconds: number) => void;
   clearRest: () => void;
   end: () => void;
 };
@@ -54,6 +55,12 @@ export const useSessionStore = create<SessionState>((set) => ({
       restEndsAt: Date.now() + durationSec * 1000,
       restDurationSec: durationSec,
     }),
+  extendRest: (seconds) =>
+    set((s) =>
+      s.restEndsAt === null
+        ? {}
+        : { restEndsAt: s.restEndsAt + seconds * 1000, restDurationSec: s.restDurationSec + seconds },
+    ),
   clearRest: () => set({ restEndsAt: null }),
   end: () => set(idle),
 }));

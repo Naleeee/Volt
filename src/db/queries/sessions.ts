@@ -66,6 +66,7 @@ export type SessionEntry = {
   exerciseId: number;
   name: string;
   measuredBy: (typeof exercises.$inferSelect)["measuredBy"];
+  restOverrideSec: number | null;
   targetSets: number;
   targetReps: number | null;
   targetTimeSec: number | null;
@@ -103,6 +104,7 @@ export function useSession(sessionId: number): SessionDetail | undefined {
         exerciseId: routineExercises.exerciseId,
         name: exercises.name,
         measuredBy: exercises.measuredBy,
+        restOverrideSec: exercises.restOverrideSec,
         targetSets: routineExercises.targetSets,
         targetReps: routineExercises.targetReps,
         targetTimeSec: routineExercises.targetTimeSec,
