@@ -158,6 +158,7 @@ export type LogSetInput = {
   timeSec?: number | null;
   weightKg?: number | null;
   note?: string | null;
+  skipped?: boolean;
 };
 
 // Every set is written the moment it is logged — the store never holds unsaved workout data.
