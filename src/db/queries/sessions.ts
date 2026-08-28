@@ -170,6 +170,10 @@ export function logSet(input: LogSetInput) {
     .get();
 }
 
+export function deleteSet(setId: number) {
+  db.delete(sessionSets).where(eq(sessionSets.id, setId)).run();
+}
+
 export function finishSession(sessionId: number) {
   db.update(sessions)
     .set({ endedAt: Date.now() })
@@ -188,17 +192,25 @@ export type SessionPosition = { exerciseIndex: number; setNumber: number };
 
 // Logged sets only carry exercise_id, and the same exercise can appear twice in a routine:
 // hand sets to entries in routine order, each entry taking at most its target.
+export function groupSetsByEntry<S extends Pick<SessionSet, "exerciseId">>(
+  entries: Pick<SessionEntry, "exerciseId" | "targetSets">[],
+  sets: S[],
+): S[][] {
+  const pool = new Map<number, S[]>();
+  for (const s of sets) pool.set(s.exerciseId, [...(pool.get(s.exerciseId) ?? []), s]);
+  return entries.map((e) => {
+    const available = pool.get(e.exerciseId) ?? [];
+    const taken = available.slice(0, e.targetSets);
+    pool.set(e.exerciseId, available.slice(taken.length));
+    return taken;
+  });
+}
+
 export function allocateLoggedSets(
   entries: Pick<SessionEntry, "exerciseId" | "targetSets">[],
   sets: Pick<SessionSet, "exerciseId">[],
 ): number[] {
-  const remaining = new Map<number, number>();
-  for (const s of sets) remaining.set(s.exerciseId, (remaining.get(s.exerciseId) ?? 0) + 1);
-  return entries.map((e) => {
-    const done = Math.min(e.targetSets, remaining.get(e.exerciseId) ?? 0);
-    remaining.set(e.exerciseId, (remaining.get(e.exerciseId) ?? 0) - done);
-    return done;
-  });
+  return groupSetsByEntry(entries, sets).map((group) => group.length);
 }
 
 // First entry with sets left, or null when every planned set is logged.
