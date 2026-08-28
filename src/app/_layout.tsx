@@ -11,6 +11,7 @@ import { seedIfEmpty } from "@/db/seed";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 
 import "react-native-reanimated";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -44,10 +45,10 @@ export default function RootLayout() {
     return null;
   }
   return (
-    <>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }} />
       <Toast />
-    </>
+    </GestureHandlerRootView>
   );
 }
 

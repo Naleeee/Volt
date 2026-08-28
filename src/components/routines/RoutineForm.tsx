@@ -1,0 +1,177 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { router } from "expo-router";
+import { useState } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Pressable, Text, View } from "react-native";
+import DraggableFlatList, {
+  ScaleDecorator,
+  type RenderItemParams,
+} from "react-native-draggable-flatlist";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import DashedButton from "@/components/UI/DashedButton";
+import FormHeader from "@/components/UI/FormHeader";
+import VTextInput from "@/components/UI/TextInput";
+import {
+  defaultEntry,
+  routineFormSchema,
+  type RoutineFormValues,
+} from "@/db/queries/routines";
+import { toast } from "@/lib/toast";
+import ExercisePickerModal from "./ExercisePickerModal";
+import RoutineExerciseCard, { type TargetKey } from "./RoutineExerciseCard";
+
+type Field = RoutineFormValues["entries"][number] & { id: string };
+
+type Props = {
+  title: string;
+  initial: RoutineFormValues;
+  onSave: (values: RoutineFormValues) => unknown;
+};
+
+export default function RoutineForm({ title, initial, onSave }: Props) {
+  const insets = useSafeAreaInsets();
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RoutineFormValues>({
+    resolver: zodResolver(routineFormSchema),
+    defaultValues: initial,
+  });
+  const { fields, append, remove, update, replace } = useFieldArray({
+    control,
+    name: "entries",
+  });
+
+  const submit = handleSubmit(async (values) => {
+    try {
+      await onSave(values);
+      router.back();
+    } catch (error) {
+      if (__DEV__) console.error(error);
+      toast.error("Couldn't save the routine. Try again.");
+    }
+  });
+
+  const entriesError = errors.entries?.root?.message ?? errors.entries?.message;
+
+  return (
+    <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
+      <FormHeader
+        title={title}
+        onCancel={() => router.back()}
+        onSave={submit}
+        saving={isSubmitting}
+      />
+      <DraggableFlatList<Field>
+        data={fields}
+        containerStyle={{ flex: 1 }}
+        onDragEnd={({ data }) =>
+          replace(data.map(({ id: _id, ...entry }) => entry))
+        }
+        keyExtractor={(field) => field.id}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{
+          padding: 20,
+          paddingTop: 10,
+          paddingBottom: 120,
+          gap: 8,
+        }}
+        ListHeaderComponent={
+          <View className="gap-2">
+            <Controller
+              control={control}
+              name="name"
+              render={({ field: { value, onChange, onBlur } }) => (
+                <VTextInput
+                  label="Name"
+                  placeholder="Push Day"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  error={errors.name?.message}
+                  returnKeyType="done"
+                />
+              )}
+            />
+            <View className="flex-row items-baseline justify-between mt-4 px-4">
+              <Text className="font-archivo-bold text-sm tracking-[1.5px] text-muted">
+                EXERCISES · {fields.length}
+              </Text>
+            </View>
+          </View>
+        }
+        renderItem={({
+          item,
+          getIndex,
+          drag,
+          isActive,
+        }: RenderItemParams<Field>) => {
+          const index = getIndex() ?? 0;
+          return (
+            <ScaleDecorator>
+              <RoutineExerciseCard
+                entry={item}
+                onChange={(patch) => update(index, { ...item, ...patch })}
+                onRemove={() => remove(index)}
+                onDrag={drag}
+                dragging={isActive}
+                error={firstEntryError(errors.entries?.[index])}
+              />
+            </ScaleDecorator>
+          );
+        }}
+        ListFooterComponent={
+          <View className="gap-2 mt-2">
+            <DashedButton
+              label="Add exercise from library"
+              onPress={() => setPickerOpen(true)}
+            />
+            {entriesError ? (
+              <Text className="font-archivo text-xs text-danger px-4">
+                {entriesError}
+              </Text>
+            ) : null}
+          </View>
+        }
+      />
+      <View
+        className="absolute left-0 right-0 bottom-0 px-5 pt-4 bg-bg"
+        style={{ paddingBottom: insets.bottom + 16 }}
+      >
+        <Pressable
+          onPress={submit}
+          disabled={isSubmitting}
+          accessibilityRole="button"
+          className="h-14 rounded-full bg-accent items-center justify-center active:opacity-80"
+        >
+          <Text className="font-archivo-bold text-[17px] text-accent-ink">
+            Save routine
+          </Text>
+        </Pressable>
+      </View>
+      <ExercisePickerModal
+        visible={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onPick={(exercise) => {
+          append(defaultEntry(exercise));
+          setPickerOpen(false);
+        }}
+      />
+    </View>
+  );
+}
+
+function firstEntryError(
+  entryErrors: Partial<Record<TargetKey, { message?: string }>> | undefined,
+) {
+  if (!entryErrors) return undefined;
+  return (
+    entryErrors.targetSets?.message ??
+    entryErrors.targetReps?.message ??
+    entryErrors.targetTimeSec?.message ??
+    entryErrors.targetWeightKg?.message
+  );
+}
