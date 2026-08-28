@@ -27,6 +27,7 @@ import type { SessionSet } from "@/db/schema";
 import { useSettings } from "@/db/queries/settings";
 import { MeasuredBy } from "@/lib/enums";
 import { formatClock, formatWeight } from "@/lib/format";
+import { restDurationFor } from "@/lib/rest";
 import { useSessionStore } from "@/lib/session-store";
 import { useNow } from "@/lib/use-now";
 
@@ -89,11 +90,11 @@ export default function SetFocus() {
       settings.autostartRestTimer &&
       !(last && index === entries.length - 1)
     ) {
-      startRest(
-        last ? settings.restBetweenExercisesSec : settings.restBetweenSetsSec,
-      );
+      startRest(restDurationFor(entry, settings, last));
+      router.replace({ pathname: "/session/[id]/rest", params: { id } });
+    } else {
+      router.back();
     }
-    router.back();
   };
 
   const skip = () => {
