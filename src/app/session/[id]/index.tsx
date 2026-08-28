@@ -20,6 +20,7 @@ import {
 } from "@/db/queries/sessions";
 import { useSettings } from "@/db/queries/settings";
 import { formatClock } from "@/lib/format";
+import { restDurationFor } from "@/lib/rest";
 import { useSessionStore } from "@/lib/session-store";
 import { useNow } from "@/lib/use-now";
 
@@ -68,7 +69,7 @@ export default function SessionChecklist() {
     if (lastSetOfExercise) setPosition(position.exerciseIndex + 1, 1);
     else setPosition(position.exerciseIndex, setNumber + 1);
     if (settings.autostartRestTimer && !(lastSetOfExercise && lastExercise)) {
-      startRest(lastSetOfExercise ? settings.restBetweenExercisesSec : settings.restBetweenSetsSec);
+      startRest(restDurationFor(entry, settings, lastSetOfExercise));
     }
   };
 
@@ -167,7 +168,11 @@ export default function SessionChecklist() {
           className="absolute left-0 right-0 bottom-0 px-5 pt-3.5 bg-bg"
           style={{ paddingBottom: insets.bottom + 16 }}
         >
-          <RestBar remainingSec={restRemainingSec} onSkip={clearRest} />
+          <RestBar
+            remainingSec={restRemainingSec}
+            onSkip={clearRest}
+            onOpen={() => router.push({ pathname: "/session/[id]/rest", params: { id } })}
+          />
         </View>
       ) : null}
     </View>
