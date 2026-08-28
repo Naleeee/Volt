@@ -21,3 +21,18 @@ export function formatLastPerformed(ts: number | null) {
   if (daysAgo >= 0 && daysAgo < 7) return format(ts, "EEEE");
   return format(ts, "d MMM");
 }
+
+// "~45 min" / "~1 h 15 min", rounded to the nearest 5 minutes.
+export function formatEstimatedDuration(totalSec: number) {
+  const minutes = Math.max(5, Math.round(totalSec / 60 / 5) * 5);
+  if (minutes < 60) return `~${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m === 0 ? `~${h} h` : `~${h} h ${String(m).padStart(2, "0")} min`;
+}
+
+// "Last: Tue" / "Today" / "Never" — the routine-card and detail subtitle form.
+export function formatLastPerformedLine(ts: number | null) {
+  const label = formatLastPerformed(ts);
+  return ts == null || label === "Today" ? label : `Last: ${label}`;
+}

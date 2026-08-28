@@ -66,10 +66,18 @@ export function defaultEntry(
   };
 }
 
-// Edit screen: undefined until both the routine row and its entries have loaded.
-export function useRoutineForm(id: number): RoutineFormValues | undefined {
+export type RoutineDetail = RoutineFormValues & { lastPerformedAt: number | null };
+
+// Detail + edit screens: undefined until both the routine row and its entries have loaded.
+export function useRoutine(id: number): RoutineDetail | undefined {
   const routine = useLiveQuery(
-    db.select({ name: routines.name }).from(routines).where(eq(routines.id, id)),
+    db
+      .select({
+        name: routines.name,
+        lastPerformedAt: sql<number | null>`(select max(s.ended_at) from sessions s where s.routine_id = ${routines.id})`,
+      })
+      .from(routines)
+      .where(eq(routines.id, id)),
     [id],
   );
   const entries = useLiveQuery(
@@ -94,6 +102,7 @@ export function useRoutineForm(id: number): RoutineFormValues | undefined {
   if (!routine.updatedAt || !entries.updatedAt || !row) return undefined;
   return {
     name: row.name,
+    lastPerformedAt: row.lastPerformedAt,
     entries: entries.data.map((e) => ({ ...e, targetSets: e.targetSets ?? 1 })),
   };
 }

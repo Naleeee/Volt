@@ -1,7 +1,7 @@
 import { Play } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
 import { colors } from "@/constants/theme";
-import { formatLastPerformed } from "@/lib/format";
+import { formatLastPerformedLine } from "@/lib/format";
 
 type Props = {
   name: string;
@@ -26,7 +26,7 @@ export default function RoutineCard({
       <View className="flex-1 gap-1">
         <Text className="font-archivo-bold text-lg text-text">{name}</Text>
         <Text className="font-archivo text-sm text-muted">
-          {`${exerciseCount} ${exerciseCount === 1 ? "exercise" : "exercises"} · ${lastPerformedLabel(lastPerformedAt)}`}
+          {`${exerciseCount} ${exerciseCount === 1 ? "exercise" : "exercises"} · ${formatLastPerformedLine(lastPerformedAt)}`}
         </Text>
       </View>
       <Pressable
@@ -44,9 +44,4 @@ export default function RoutineCard({
       </Pressable>
     </Pressable>
   );
-}
-
-function lastPerformedLabel(ts: number | null) {
-  const label = formatLastPerformed(ts);
-  return ts == null || label === "Today" ? label : `Last: ${label}`;
 }
