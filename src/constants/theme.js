@@ -11,6 +11,7 @@ const colors = {
   muted: "#8C92A0",
   danger: "#FF5C39",
   time: "#7FD8FF",
+  other: "#C9A9FF",
 };
 
 module.exports = { colors };

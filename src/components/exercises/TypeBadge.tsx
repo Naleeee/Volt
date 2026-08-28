@@ -4,7 +4,7 @@ import { MeasuredBy } from "@/lib/enums";
 const STYLES: Record<MeasuredBy, { box: string; text: string }> = {
   [MeasuredBy.Reps]: { box: "border-accent/35", text: "text-accent" },
   [MeasuredBy.Time]: { box: "border-time/35", text: "text-time" },
-  [MeasuredBy.Other]: { box: "border-white/20", text: "text-muted" },
+  [MeasuredBy.Other]: { box: "border-other/35", text: "text-other" },
 };
 
 export default function TypeBadge({ measuredBy }: { measuredBy: MeasuredBy }) {

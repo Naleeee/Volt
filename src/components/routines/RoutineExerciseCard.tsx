@@ -15,7 +15,7 @@ export type TargetKey =
 const TYPE_STYLE: Record<MeasuredBy, { edge: string; ring: string; label: string }> = {
   [MeasuredBy.Reps]: { edge: "border-l-accent", ring: "border-accent", label: "text-accent" },
   [MeasuredBy.Time]: { edge: "border-l-time", ring: "border-time", label: "text-time" },
-  [MeasuredBy.Other]: { edge: "border-l-muted", ring: "border-muted", label: "text-muted" },
+  [MeasuredBy.Other]: { edge: "border-l-other", ring: "border-other", label: "text-other" },
 };
 
 type Props = {
