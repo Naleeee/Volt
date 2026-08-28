@@ -4,6 +4,7 @@ import { colors } from "@/constants/theme";
 import type { SessionEntry } from "@/db/queries/sessions";
 import type { SessionSet } from "@/db/schema";
 import { MeasuredBy } from "@/lib/enums";
+import { describeSet } from "@/lib/describe-set";
 import { formatWeight } from "@/lib/format";
 
 // "4 × 8 · 60 kg" / "3 × 45 sec" / "3 sets"
@@ -100,6 +101,7 @@ function targetFor(entry: SessionEntry, key: Column["key"]) {
 type ExpandedProps = {
   entry: SessionEntry;
   loggedSets: SessionSet[];
+  ghostSets?: SessionSet[];
   current: boolean;
   restHint?: string;
   onLogSet: (setNumber: number) => void;
@@ -111,6 +113,7 @@ type ExpandedProps = {
 export function ExpandedExerciseCard({
   entry,
   loggedSets,
+  ghostSets = [],
   current,
   restHint,
   onLogSet,
@@ -119,6 +122,7 @@ export function ExpandedExerciseCard({
   onCollapse,
 }: ExpandedProps) {
   const columns = columnsFor(entry);
+  const showLast = ghostSets.length > 0 && entry.measuredBy !== MeasuredBy.Other;
   const nextSet = current ? loggedSets.length + 1 : 0;
 
   return (
@@ -153,10 +157,18 @@ export function ExpandedExerciseCard({
         )}
       </Pressable>
 
+      {entry.measuredBy === MeasuredBy.Other && ghostSets.length > 0 ? (
+        <Text className="font-archivo text-xs text-muted mt-2 px-0.5" numberOfLines={2}>
+          Last time · {ghostSets.map((g) => describeSet(g, entry.measuredBy)).join(" · ")}
+        </Text>
+      ) : null}
       <View className="flex-row items-center gap-1.5 mt-2.5 px-0.5">
         <Text className="w-9 font-archivo-bold text-[10px] tracking-[0.8px] text-muted">
           SET
         </Text>
+        {showLast ? (
+          <Text className="flex-1 font-archivo-bold text-[10px] tracking-[0.8px] text-muted">LAST</Text>
+        ) : null}
         {columns.map((c) => (
           <Text
             key={c.key}
@@ -193,6 +205,13 @@ export function ExpandedExerciseCard({
               }
               className="flex-1 flex-row gap-1.5 active:opacity-80"
             >
+              {showLast ? (
+                <View className="flex-1 h-[38px] items-center justify-center">
+                  <Text className="font-archivo-semibold text-[13px] text-muted" numberOfLines={1}>
+                    {ghostSets[i] ? describeSet(ghostSets[i], entry.measuredBy, true) : "–"}
+                  </Text>
+                </View>
+              ) : null}
               {columns.map((c) => {
                 const value =
                   logged && !logged.skipped
