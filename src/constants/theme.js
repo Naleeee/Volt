@@ -11,6 +11,7 @@ const colors = {
   muted: "#8C92A0",
   danger: "#FF5C39",
   time: "#7FD8FF",
+  "time-ink": "#06222E",
   other: "#C9A9FF",
 };
 

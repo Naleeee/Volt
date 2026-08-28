@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react-native";
 import { ActivityIndicator, Pressable, Text } from "react-native";
 import { colors } from "@/constants/theme";
 
-type Variant = "primary" | "outline" | "dashed";
+type Variant = "primary" | "time" | "outline" | "dashed";
 type Size = "sm" | "lg";
 
 const VARIANTS: Record<
@@ -13,6 +13,11 @@ const VARIANTS: Record<
     box: "bg-accent rounded-full",
     text: "text-accent-ink",
     color: colors["accent-ink"],
+  },
+  time: {
+    box: "bg-time rounded-full",
+    text: "text-time-ink",
+    color: colors["time-ink"],
   },
   outline: {
     box: "border-[1.5px] border-accent rounded-full",

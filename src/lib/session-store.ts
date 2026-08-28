@@ -1,28 +1,37 @@
 import { create } from "zustand";
 
-// Ephemeral pointers only. Everything durable (sets, start/end) lives in SQLite;
-// timers are timestamps so display time is derived from the clock and survives backgrounding.
 type SessionState = {
   sessionId: number | null;
   exerciseIndex: number;
   setNumber: number;
-  setStartedAt: number | null;
+  holdStartedAt: number | null;
+  holdElapsedMs: number;
   restEndsAt: number | null;
+  restDurationSec: number;
   begin: (sessionId: number) => void;
-  restore: (sessionId: number, exerciseIndex: number, setNumber: number) => void;
+  restore: (
+    sessionId: number,
+    exerciseIndex: number,
+    setNumber: number,
+  ) => void;
   setPosition: (exerciseIndex: number, setNumber: number) => void;
-  startSet: () => void;
+  startHold: () => void;
+  pauseHold: () => void;
+  resetHold: () => void;
   startRest: (durationSec: number) => void;
   clearRest: () => void;
   end: () => void;
 };
 
+const noHold = { holdStartedAt: null, holdElapsedMs: 0 };
+
 const idle = {
   sessionId: null,
   exerciseIndex: 0,
   setNumber: 1,
-  setStartedAt: null,
+  ...noHold,
   restEndsAt: null,
+  restDurationSec: 0,
 };
 
 export const useSessionStore = create<SessionState>((set) => ({
@@ -31,9 +40,20 @@ export const useSessionStore = create<SessionState>((set) => ({
   restore: (sessionId, exerciseIndex, setNumber) =>
     set({ ...idle, sessionId, exerciseIndex, setNumber }),
   setPosition: (exerciseIndex, setNumber) =>
-    set({ exerciseIndex, setNumber, setStartedAt: null, restEndsAt: null }),
-  startSet: () => set({ setStartedAt: Date.now() }),
-  startRest: (durationSec) => set({ restEndsAt: Date.now() + durationSec * 1000 }),
+    set({ exerciseIndex, setNumber, ...noHold, restEndsAt: null }),
+  startHold: () => set({ holdStartedAt: Date.now() }),
+  pauseHold: () =>
+    set((s) => ({
+      holdStartedAt: null,
+      holdElapsedMs:
+        s.holdElapsedMs + (s.holdStartedAt ? Date.now() - s.holdStartedAt : 0),
+    })),
+  resetHold: () => set(noHold),
+  startRest: (durationSec) =>
+    set({
+      restEndsAt: Date.now() + durationSec * 1000,
+      restDurationSec: durationSec,
+    }),
   clearRest: () => set({ restEndsAt: null }),
   end: () => set(idle),
 }));
