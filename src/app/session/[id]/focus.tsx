@@ -18,6 +18,7 @@ import {
   finishSession,
   groupSetsByEntry,
   logSet,
+  useGhostSets,
   useLastPerformedSet,
   useSession,
   useSessionSets,
@@ -26,6 +27,7 @@ import {
 import type { SessionSet } from "@/db/schema";
 import { useSettings } from "@/db/queries/settings";
 import { MeasuredBy } from "@/lib/enums";
+import { describeSet } from "@/lib/describe-set";
 import { formatClock, formatWeight } from "@/lib/format";
 import { restDurationFor } from "@/lib/rest";
 import { useSessionStore } from "@/lib/session-store";
@@ -37,6 +39,7 @@ export default function SetFocus() {
   const sessionId = Number(id);
   const session = useSession(sessionId);
   const sets = useSessionSets(sessionId);
+  const ghosts = useGhostSets(session?.entries.map((e) => e.exerciseId) ?? [], sessionId);
   const settings = useSettings();
   const now = useNow();
   const { exerciseIndex, setPosition, startRest, resetHold, end } =
@@ -67,6 +70,7 @@ export default function SetFocus() {
   const grouped = groupSetsByEntry(entries, sets);
   const logged = grouped[index];
   const setNumber = logged.length + 1;
+  const ghost = groupSetsByEntry(entries, ghosts)[index][setNumber - 1];
   const exerciseDone = setNumber > entry.targetSets;
   const elapsedSec = Math.max(0, Math.floor((now - session.startedAt) / 1000));
 
@@ -228,6 +232,7 @@ export default function SetFocus() {
       ) : entry.measuredBy === MeasuredBy.Time ? (
         <TimeFocus
           entry={entry}
+          ghost={ghost}
           setNumber={setNumber}
           logged={logged}
           now={now}
@@ -239,6 +244,7 @@ export default function SetFocus() {
       ) : entry.measuredBy === MeasuredBy.Reps ? (
         <RepsFocus
           entry={entry}
+          ghost={ghost}
           setNumber={setNumber}
           logged={logged}
           autoRest={settings.autostartRestTimer}
@@ -249,6 +255,7 @@ export default function SetFocus() {
       ) : (
         <OtherFocus
           entry={entry}
+          ghost={ghost}
           setNumber={setNumber}
           logged={logged}
           sessionId={sessionId}
@@ -266,6 +273,7 @@ type FocusProps = {
   entry: SessionEntry;
   setNumber: number;
   logged: SessionSet[];
+  ghost?: SessionSet;
   autoRest: boolean;
   onComplete: (values: {
     reps?: number | null;
@@ -345,6 +353,15 @@ function TitleBlock({
   );
 }
 
+function GhostLine({ set, measuredBy }: { set: SessionSet | undefined; measuredBy: SessionEntry["measuredBy"] }) {
+  if (!set) return null;
+  return (
+    <Text className="font-archivo text-[13px] text-muted text-center mb-1.5" numberOfLines={1}>
+      Last time · <Text className="font-archivo-bold text-text">{describeSet(set, measuredBy)}</Text>
+    </Text>
+  );
+}
+
 function LastSetLine({
   set,
   unit,
@@ -377,6 +394,7 @@ function RepsFocus({
   entry,
   setNumber,
   logged,
+  ghost,
   autoRest,
   onComplete,
   onSkip,
@@ -449,6 +467,7 @@ function RepsFocus({
           />
         </View>
       ) : null}
+      <GhostLine set={ghost} measuredBy={entry.measuredBy} />
       <LastSetLine set={lastLogged} unit="reps" />
       {footer(
         <Button
@@ -468,6 +487,7 @@ function TimeFocus({
   entry,
   setNumber,
   logged,
+  ghost,
   now,
   onComplete,
   onSkip,
@@ -521,6 +541,7 @@ function TimeFocus({
           </Text>
         </TimerRing>
         <View className="mt-[18px]">
+          <GhostLine set={ghost} measuredBy={entry.measuredBy} />
           <LastSetLine set={lastLogged} unit="sec" />
         </View>
       </View>
@@ -549,6 +570,7 @@ function OtherFocus({
   entry,
   setNumber,
   logged,
+  ghost,
   sessionId,
   autoRest,
   onComplete,
@@ -598,6 +620,7 @@ function OtherFocus({
         ))}
       </View>
       <View className="flex-1" />
+      <GhostLine set={ghost} measuredBy={entry.measuredBy} />
       <LastSetLine set={lastLogged} unit="note" />
       {footer(
         <Button
