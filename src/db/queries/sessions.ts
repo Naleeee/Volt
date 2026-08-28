@@ -38,16 +38,15 @@ export function useActiveSession(): ActiveSession | null | undefined {
       .orderBy(desc(sessions.startedAt))
       .limit(1),
   );
-  const sessionId = active.data[0]?.id ?? -1;
   const progress = useLiveQuery(
     db
       .select({
-        loggedSets: sql<number>`count(*)`.mapWith(Number),
+        loggedSets: sql<number>`count(${sessionSets.id})`.mapWith(Number),
         lastSetAt: sql<number | null>`max(${sessionSets.completedAt})`,
       })
       .from(sessionSets)
-      .where(eq(sessionSets.sessionId, sessionId)),
-    [sessionId],
+      .innerJoin(sessions, eq(sessions.id, sessionSets.sessionId))
+      .where(isNull(sessions.endedAt)),
   );
 
   if (!active.updatedAt) return undefined;
@@ -95,7 +94,6 @@ export function useSession(sessionId: number): SessionDetail | undefined {
       .where(eq(sessions.id, sessionId)),
     [sessionId],
   );
-  const routineId = session.data[0]?.routineId ?? -1;
   const entries = useLiveQuery(
     db
       .select({
@@ -109,9 +107,10 @@ export function useSession(sessionId: number): SessionDetail | undefined {
       })
       .from(routineExercises)
       .innerJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
-      .where(eq(routineExercises.routineId, routineId))
+      .innerJoin(sessions, eq(sessions.routineId, routineExercises.routineId))
+      .where(eq(sessions.id, sessionId))
       .orderBy(asc(routineExercises.position)),
-    [routineId],
+    [sessionId],
   );
 
   const row = session.data[0];
