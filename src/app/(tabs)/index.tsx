@@ -1,7 +1,8 @@
 import RoutineCard from "@/components/routines/RoutineCard";
-import DashedButton from "@/components/UI/DashedButton";
+import Button from "@/components/UI/Button";
 import { useRoutines } from "@/db/queries/routines";
 import { router } from "expo-router";
+import { Plus } from "lucide-react-native";
 import { FlatList, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -9,8 +10,6 @@ export default function Index() {
   const insets = useSafeAreaInsets();
   const routines = useRoutines();
 
-  const editRoutine = (id: number) =>
-    router.push({ pathname: "/routine/[id]/edit", params: { id: String(id) } });
   const openRoutine = (id: number) =>
     router.push({ pathname: "/routine/[id]", params: { id: String(id) } });
 
@@ -29,7 +28,9 @@ export default function Index() {
           </Text>
         }
         ListFooterComponent={
-          <DashedButton
+          <Button
+            variant="dashed"
+            icon={Plus}
             label="New routine"
             onPress={() => router.push("/routine/new")}
           />
@@ -39,7 +40,7 @@ export default function Index() {
             name={item.name}
             exerciseCount={item.exerciseCount}
             lastPerformedAt={item.lastPerformedAt}
-            onPress={() => editRoutine(item.id)}
+            onPress={() => openRoutine(item.id)}
             onStart={() => openRoutine(item.id)}
           />
         )}
