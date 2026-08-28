@@ -1,0 +1,1 @@
+ALTER TABLE `session_sets` ADD `skipped` integer DEFAULT false NOT NULL;
