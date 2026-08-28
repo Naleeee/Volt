@@ -76,6 +76,7 @@ type ExpandedProps = {
   restHint?: string;
   onLogSet: (setNumber: number) => void;
   onUnlogSet: (setId: number) => void;
+  onOpenSet?: (setNumber: number) => void;
   onCollapse?: () => void;
 };
 
@@ -88,6 +89,7 @@ export function ExpandedExerciseCard({
   restHint,
   onLogSet,
   onUnlogSet,
+  onOpenSet,
   onCollapse,
 }: ExpandedProps) {
   const columns = columnsFor(entry);
@@ -139,32 +141,44 @@ export function ExpandedExerciseCard({
             >
               {setNumber}
             </Text>
-            {columns.map((c) => {
-              const value = logged ? logged[c.key] : targetFor(entry, c.key);
-              return (
-                <View
-                  key={c.key}
-                  className={`flex-1 h-[38px] rounded-[10px] bg-card2 items-center justify-center border ${isNext ? "border-accent" : "border-transparent"}`}
-                >
-                  <Text
-                    className={`text-[15px] ${state === "upcoming" ? "font-archivo-semibold text-muted" : "font-archivo-bold text-text"}`}
-                    style={{ fontVariant: ["tabular-nums"] }}
-                    numberOfLines={1}
+            <Pressable
+              onPress={onOpenSet ? () => onOpenSet(setNumber) : undefined}
+              disabled={!isNext || !onOpenSet}
+              accessibilityRole={isNext && onOpenSet ? "button" : undefined}
+              accessibilityLabel={isNext && onOpenSet ? `Open set ${setNumber}` : undefined}
+              className="flex-1 flex-row gap-1.5 active:opacity-80"
+            >
+              {columns.map((c) => {
+                const value = logged && !logged.skipped ? logged[c.key] : logged ? null : targetFor(entry, c.key);
+                return (
+                  <View
+                    key={c.key}
+                    className={`flex-1 h-[38px] rounded-[10px] bg-card2 items-center justify-center border ${isNext ? "border-accent" : "border-transparent"}`}
                   >
-                    {value === null || value === undefined ? "–" : String(value)}
-                  </Text>
-                </View>
-              );
-            })}
+                    <Text
+                      className={`text-[15px] ${state === "upcoming" || logged?.skipped ? "font-archivo-semibold text-muted" : "font-archivo-bold text-text"}`}
+                      style={{ fontVariant: ["tabular-nums"] }}
+                      numberOfLines={1}
+                    >
+                      {value === null || value === undefined ? "–" : String(value)}
+                    </Text>
+                  </View>
+                );
+              })}
+            </Pressable>
             {logged ? (
               <Pressable
                 onPress={() => onUnlogSet(logged.id)}
                 disabled={!isLastLogged}
                 accessibilityRole="button"
-                accessibilityLabel={`Undo set ${setNumber}`}
-                className="w-11 h-[38px] rounded-[10px] bg-accent items-center justify-center active:opacity-80"
+                accessibilityLabel={logged.skipped ? `Undo skipped set ${setNumber}` : `Undo set ${setNumber}`}
+                className={`w-11 h-[38px] rounded-[10px] items-center justify-center active:opacity-80 ${logged.skipped ? "bg-card2 border border-line" : "bg-accent"}`}
               >
-                <Check size={18} color={colors["accent-ink"]} strokeWidth={3} />
+                {logged.skipped ? (
+                  <Text className="font-archivo-bold text-xs text-muted">skip</Text>
+                ) : (
+                  <Check size={18} color={colors["accent-ink"]} strokeWidth={3} />
+                )}
               </Pressable>
             ) : (
               <Pressable

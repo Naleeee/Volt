@@ -56,6 +56,7 @@ export const sessionSets = sqliteTable("session_sets", {
   timeSec: integer("time_sec"),
   weightKg: real("weight_kg"),
   note: text("note"),
+  skipped: integer("skipped", { mode: "boolean" }).notNull().default(false),
   completedAt: integer("completed_at").notNull(),
 });
 
