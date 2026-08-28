@@ -2,6 +2,7 @@ import { GripVertical, X } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import TypeBadge from "@/components/exercises/TypeBadge";
+import { MEASURED_BY_STYLES } from "@/constants/exercises";
 import { colors } from "@/constants/theme";
 import type { RoutineEntry } from "@/db/queries/routines";
 import { MeasuredBy } from "@/lib/enums";
@@ -11,12 +12,6 @@ export type TargetKey =
   | "targetReps"
   | "targetTimeSec"
   | "targetWeightKg";
-
-const TYPE_STYLE: Record<MeasuredBy, { edge: string; ring: string; label: string }> = {
-  [MeasuredBy.Reps]: { edge: "border-l-accent", ring: "border-accent", label: "text-accent" },
-  [MeasuredBy.Time]: { edge: "border-l-time", ring: "border-time", label: "text-time" },
-  [MeasuredBy.Other]: { edge: "border-l-other", ring: "border-other", label: "text-other" },
-};
 
 type Props = {
   entry: RoutineEntry;
@@ -35,7 +30,7 @@ export default function RoutineExerciseCard({
   dragging = false,
   error,
 }: Props) {
-  const type = TYPE_STYLE[entry.measuredBy];
+  const type = MEASURED_BY_STYLES[entry.measuredBy];
   const hasWeight = entry.targetWeightKg !== null;
 
   return (
@@ -81,14 +76,14 @@ export default function RoutineExerciseCard({
       <View className="flex-row gap-2 mt-2">
         <NumberField
           label="SETS"
-          labelClass={type.label}
+          labelClass={type.text}
           value={entry.targetSets}
           onCommit={(v) => onChange({ targetSets: v ?? entry.targetSets })}
         />
         {entry.measuredBy === MeasuredBy.Reps ? (
           <NumberField
             label="REPS"
-            labelClass={type.label}
+            labelClass={type.text}
             value={entry.targetReps}
             onCommit={(v) => onChange({ targetReps: v ?? entry.targetReps })}
           />
@@ -96,7 +91,7 @@ export default function RoutineExerciseCard({
         {entry.measuredBy === MeasuredBy.Time ? (
           <NumberField
             label="HOLD"
-            labelClass={type.label}
+            labelClass={type.text}
             unit="sec"
             value={entry.targetTimeSec}
             onCommit={(v) => onChange({ targetTimeSec: v ?? entry.targetTimeSec })}
@@ -105,7 +100,7 @@ export default function RoutineExerciseCard({
         {entry.measuredBy !== MeasuredBy.Other && hasWeight ? (
           <NumberField
             label="WEIGHT"
-            labelClass={type.label}
+            labelClass={type.text}
             unit="kg"
             decimal
             value={entry.targetWeightKg}

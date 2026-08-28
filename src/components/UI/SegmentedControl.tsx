@@ -24,6 +24,7 @@ type Props<T extends string> = {
   optional?: boolean;
   legend?: string;
   error?: string;
+  activeColor?: string;
 };
 
 export default function SegmentedControl<T extends string>({
@@ -34,6 +35,7 @@ export default function SegmentedControl<T extends string>({
   optional,
   legend,
   error,
+  activeColor = colors.accent,
 }: Props<T>) {
   const index = Math.max(
     0,
@@ -85,6 +87,7 @@ export default function SegmentedControl<T extends string>({
             label={option.label}
             selected={option.value === value}
             onPress={() => onChange(option.value)}
+            activeColor={activeColor}
           />
         ))}
       </View>
@@ -105,13 +108,15 @@ function Segment({
   label,
   selected,
   onPress,
+  activeColor = colors.accent,
 }: {
   label: string;
   selected: boolean;
   onPress: () => void;
+  activeColor?: string;
 }) {
   const textStyle = useAnimatedStyle(() => ({
-    color: withTiming(selected ? colors.accent : colors.muted, TIMING),
+    color: withTiming(selected ? activeColor : colors.muted, TIMING),
   }));
 
   return (

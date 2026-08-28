@@ -4,9 +4,13 @@ import { Controller, useForm } from "react-hook-form";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FormHeader from "@/components/UI/FormHeader";
+import { MEASURED_BY_STYLES } from "@/constants/exercises";
 import SegmentedControl from "@/components/UI/SegmentedControl";
 import VTextInput from "@/components/UI/TextInput";
-import { exerciseFormSchema, type ExerciseFormValues } from "@/db/queries/exercises";
+import {
+  exerciseFormSchema,
+  type ExerciseFormValues,
+} from "@/db/queries/exercises";
 import { MeasuredBy } from "@/lib/enums";
 import { toast } from "@/lib/toast";
 
@@ -80,6 +84,7 @@ export default function ExerciseForm({ title, initial, onSave }: Props) {
                 '"Other" exercises log a free-form note per set (distance, load, etc.).'
               }
               error={errors.measuredBy?.message}
+              activeColor={MEASURED_BY_STYLES[value].color}
             />
           )}
         />

@@ -6,7 +6,7 @@ import SearchBar from "@/components/UI/SearchBar";
 import { useExercises } from "@/db/queries/exercises";
 import type { Exercise } from "@/db/schema";
 import FilterChips from "../UI/FilterChips";
-import { MEASURED_BY_FILTERS, MeasuredByFilter } from "@/constants/filters";
+import { MEASURED_BY_FILTERS, MeasuredByFilter } from "@/constants/exercises";
 
 type Props = {
   visible: boolean;

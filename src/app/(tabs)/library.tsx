@@ -8,7 +8,7 @@ import { Plus } from "lucide-react-native";
 import { FlatList, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useExercises } from "@/db/queries/exercises";
-import { MEASURED_BY_FILTERS, MeasuredByFilter } from "@/constants/filters";
+import { MEASURED_BY_FILTERS, MeasuredByFilter } from "@/constants/exercises";
 
 export default function Index() {
   const insets = useSafeAreaInsets();
