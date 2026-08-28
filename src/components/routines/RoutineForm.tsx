@@ -1,14 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
+import { Plus } from "lucide-react-native";
 import { useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import DraggableFlatList, {
   ScaleDecorator,
   type RenderItemParams,
 } from "react-native-draggable-flatlist";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import DashedButton from "@/components/UI/DashedButton";
+import Button from "@/components/UI/Button";
 import FormHeader from "@/components/UI/FormHeader";
 import VTextInput from "@/components/UI/TextInput";
 import {
@@ -123,34 +124,27 @@ export default function RoutineForm({ title, initial, onSave }: Props) {
             </ScaleDecorator>
           );
         }}
-        ListFooterComponent={
-          <View className="gap-2 mt-2">
-            <DashedButton
-              label="Add exercise from library"
-              onPress={() => setPickerOpen(true)}
-            />
-            {entriesError ? (
-              <Text className="font-archivo text-xs text-danger px-4">
-                {entriesError}
-              </Text>
-            ) : null}
-          </View>
-        }
       />
       <View
         className="absolute left-0 right-0 bottom-0 px-5 pt-4 bg-bg"
         style={{ paddingBottom: insets.bottom + 16 }}
       >
-        <Pressable
-          onPress={submit}
-          disabled={isSubmitting}
-          accessibilityRole="button"
-          className="h-14 rounded-full bg-accent items-center justify-center active:opacity-80"
-        >
-          <Text className="font-archivo-bold text-[17px] text-accent-ink">
-            Save routine
-          </Text>
-        </Pressable>
+        <View className="flex-row items-center justify-center gap-4 mb-4">
+          <Button
+            variant="outline"
+            label="Add"
+            onPress={() => setPickerOpen(true)}
+            loading={isSubmitting}
+            icon={Plus}
+            className="w-[7rem]"
+          />
+          <Button
+            label="Save routine"
+            onPress={submit}
+            loading={isSubmitting}
+            className="flex-grow"
+          />
+        </View>
       </View>
       <ExercisePickerModal
         visible={pickerOpen}

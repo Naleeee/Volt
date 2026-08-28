@@ -1,7 +1,8 @@
 import RoutineCard from "@/components/routines/RoutineCard";
-import DashedButton from "@/components/UI/DashedButton";
+import Button from "@/components/UI/Button";
 import { useRoutines } from "@/db/queries/routines";
 import { router } from "expo-router";
+import { Plus } from "lucide-react-native";
 import { FlatList, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -27,7 +28,9 @@ export default function Index() {
           </Text>
         }
         ListFooterComponent={
-          <DashedButton
+          <Button
+            variant="dashed"
+            icon={Plus}
             label="New routine"
             onPress={() => router.push("/routine/new")}
           />

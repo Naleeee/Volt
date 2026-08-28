@@ -3,6 +3,7 @@ import { ChevronLeft, Play } from "lucide-react-native";
 import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import RoutineExerciseRow from "@/components/routines/RoutineExerciseRow";
+import Button from "@/components/UI/Button";
 import { colors } from "@/constants/theme";
 import { useRoutine } from "@/db/queries/routines";
 import { useSettings } from "@/db/queries/settings";
@@ -77,14 +78,12 @@ export default function RoutineDetail() {
         className="absolute left-0 right-0 bottom-0 px-5 pt-4 bg-bg"
         style={{ paddingBottom: insets.bottom + 16 }}
       >
-        <Pressable
+        <Button
+          label="Start workout"
+          icon={Play}
+          iconFill
           onPress={() => toast.info("Workout sessions arrive with the session engine.")}
-          accessibilityRole="button"
-          className="h-14 flex-row items-center justify-center gap-[9px] rounded-full bg-accent active:opacity-80"
-        >
-          <Play size={18} color={colors["accent-ink"]} fill={colors["accent-ink"]} />
-          <Text className="font-archivo-bold text-[17px] text-accent-ink">Start workout</Text>
-        </Pressable>
+        />
       </View>
     </View>
   );

@@ -1,6 +1,6 @@
 import { Play } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
-import { colors } from "@/constants/theme";
+import Button from "@/components/UI/Button";
 import { formatLastPerformedLine } from "@/lib/format";
 
 type Props = {
@@ -29,19 +29,14 @@ export default function RoutineCard({
           {`${exerciseCount} ${exerciseCount === 1 ? "exercise" : "exercises"} · ${formatLastPerformedLine(lastPerformedAt)}`}
         </Text>
       </View>
-      <Pressable
+      <Button
+        label="Start"
+        size="sm"
+        icon={Play}
+        iconFill
         onPress={onStart}
-        accessibilityRole="button"
         accessibilityLabel={`Start ${name}`}
-        className="flex-row items-center gap-2 h-10 px-5 rounded-full bg-accent active:opacity-80"
-      >
-        <Play
-          size={14}
-          color={colors["accent-ink"]}
-          fill={colors["accent-ink"]}
-        />
-        <Text className="font-archivo-bold text-sm text-accent-ink">Start</Text>
-      </Pressable>
+      />
     </Pressable>
   );
 }
