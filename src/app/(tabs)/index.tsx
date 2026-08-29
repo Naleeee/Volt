@@ -8,9 +8,9 @@ import {
   discardSession,
   getResumePosition,
   useActiveSession,
+  useWeekStats,
 } from "@/db/queries/sessions";
 import { useSessionStore } from "@/lib/session-store";
-import { useTheme } from "@react-navigation/native";
 import { format } from "date-fns";
 import { router } from "expo-router";
 import { Plus, Zap } from "lucide-react-native";
@@ -21,8 +21,8 @@ export default function Index() {
   const insets = useSafeAreaInsets();
   const routines = useRoutines();
   const active = useActiveSession();
+  const stats = useWeekStats();
   const { restore, end } = useSessionStore();
-  const theme = useTheme();
 
   const openRoutine = (id: number) =>
     router.push({ pathname: "/routine/[id]", params: { id: String(id) } });
@@ -63,7 +63,7 @@ export default function Index() {
     >
       <View className="flex flex-row items-end justify-between mt-2">
         <View className="flex flex-col gap-2">
-          <Text className="font-archivo text-xs tracking-[1.5px] text-muted uppercase mt-4">
+          <Text className="font-archivo-bold text-xs tracking-[1.5px] text-muted uppercase mt-4">
             {format(new Date(), "EEEE d MMM")}
           </Text>
           <Text className="font-archivo-black text-4xl text-text">
@@ -72,11 +72,15 @@ export default function Index() {
         </View>
         <View className="flex flex-row justify-center items-center gap-2 bg-card rounded-3xl p-3 py-2 border border-muted">
           <Zap color={colors.accent} size={14} fill={colors.accent} />
-          <Text className="font-archivo text-md text-text">6 wk</Text>
+          <Text className="font-archivo text-md text-text">{stats.streakWeeks} wk</Text>
         </View>
       </View>
 
-      <RoutinesStatsPill />
+      <RoutinesStatsPill
+        workouts={stats.workouts}
+        trainedSec={stats.trainedSec}
+        setsLogged={stats.setsLogged}
+      />
 
       <FlatList
         data={routines}
