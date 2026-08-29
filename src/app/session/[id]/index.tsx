@@ -1,3 +1,4 @@
+import { useNavigation, usePreventRemove } from "@react-navigation/native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Alert, FlatList, Text, View } from "react-native";
@@ -31,12 +32,41 @@ export default function SessionChecklist() {
   const sessionId = Number(id);
   const session = useSession(sessionId);
   const sets = useSessionSets(sessionId);
-  const ghosts = useGhostSets(session?.entries.map((e) => e.exerciseId) ?? [], sessionId);
+  const ghosts = useGhostSets(
+    session?.entries.map((e) => e.exerciseId) ?? [],
+    sessionId,
+  );
   const settings = useSettings();
   const now = useNow();
-  const { restEndsAt, restDurationSec, startRest, clearRest, setPosition, end } =
-    useSessionStore();
+  const {
+    restEndsAt,
+    restDurationSec,
+    startRest,
+    clearRest,
+    setPosition,
+    end,
+  } = useSessionStore();
   const [reopenedIndex, setReopenedIndex] = useState<number | null>(null);
+  const navigation = useNavigation();
+
+  usePreventRemove(true, ({ data }) => {
+    if (useSessionStore.getState().sessionId === null) {
+      navigation.dispatch(data.action);
+      return;
+    }
+    Alert.alert(
+      "Leave workout?",
+      "It stays in progress — resume it from Home.",
+      [
+        { text: "Stay", style: "cancel" },
+        {
+          text: "Leave",
+          style: "destructive",
+          onPress: () => navigation.dispatch(data.action),
+        },
+      ],
+    );
+  });
 
   if (!session) {
     return (
@@ -89,11 +119,16 @@ export default function SessionChecklist() {
       router.dismissTo("/");
     };
     if (!position) return complete();
-    const remaining = session.entries.reduce((n, e) => n + e.targetSets, 0) - sets.length;
-    Alert.alert("Finish early?", `${remaining} planned ${remaining === 1 ? "set is" : "sets are"} still open.`, [
-      { text: "Keep going", style: "cancel" },
-      { text: "Finish", style: "destructive", onPress: complete },
-    ]);
+    const remaining =
+      session.entries.reduce((n, e) => n + e.targetSets, 0) - sets.length;
+    Alert.alert(
+      "Finish early?",
+      `${remaining} planned ${remaining === 1 ? "set is" : "sets are"} still open.`,
+      [
+        { text: "Keep going", style: "cancel" },
+        { text: "Finish", style: "destructive", onPress: complete },
+      ],
+    );
   };
 
   return (
@@ -115,7 +150,12 @@ export default function SessionChecklist() {
       <FlatList
         data={session.entries}
         keyExtractor={(entry, index) => `${entry.exerciseId}-${index}`}
-        contentContainerStyle={{ padding: 20, paddingTop: 14, paddingBottom: 120, gap: 8 }}
+        contentContainerStyle={{
+          padding: 20,
+          paddingTop: 14,
+          paddingBottom: 120,
+          gap: 8,
+        }}
         renderItem={({ item, index }) => {
           if (position?.exerciseIndex === index) {
             return (
@@ -132,9 +172,12 @@ export default function SessionChecklist() {
                 onLogSet={logCurrentSet}
                 onUnlogSet={unlogSet}
                 onOpenSet={(setNumber) => {
-                        setPosition(index, setNumber);
-                        router.push({ pathname: "/session/[id]/focus", params: { id } });
-                      }}
+                  setPosition(index, setNumber);
+                  router.push({
+                    pathname: "/session/[id]/focus",
+                    params: { id },
+                  });
+                }}
               />
             );
           }
@@ -176,7 +219,9 @@ export default function SessionChecklist() {
           <RestBar
             remainingSec={restRemainingSec}
             onSkip={clearRest}
-            onOpen={() => router.push({ pathname: "/session/[id]/rest", params: { id } })}
+            onOpen={() =>
+              router.push({ pathname: "/session/[id]/rest", params: { id } })
+            }
           />
         </View>
       ) : null}
