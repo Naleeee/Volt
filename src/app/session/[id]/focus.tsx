@@ -41,7 +41,10 @@ export default function SetFocus() {
   const sessionId = Number(id);
   const session = useSession(sessionId);
   const sets = useSessionSets(sessionId);
-  const ghosts = useGhostSets(session?.entries.map((e) => e.exerciseId) ?? [], sessionId);
+  const ghosts = useGhostSets(
+    session?.entries.map((e) => e.exerciseId) ?? [],
+    sessionId,
+  );
   const settings = useSettings();
   const now = useNow();
   const { exerciseIndex, setPosition, startRest, resetHold, end } =
@@ -122,6 +125,7 @@ export default function SetFocus() {
       finishSession(sessionId);
       end();
       router.dismissTo("/");
+      router.push({ pathname: "/session/[id]/summary", params: { id } });
     };
     const remaining =
       entries.reduce((n, e) => n + e.targetSets, 0) - sets.length;
@@ -356,11 +360,23 @@ function TitleBlock({
   );
 }
 
-function GhostLine({ set, measuredBy }: { set: SessionSet | undefined; measuredBy: SessionEntry["measuredBy"] }) {
+function GhostLine({
+  set,
+  measuredBy,
+}: {
+  set: SessionSet | undefined;
+  measuredBy: SessionEntry["measuredBy"];
+}) {
   if (!set) return null;
   return (
-    <Text className="font-archivo text-[13px] text-muted text-center mb-1.5" numberOfLines={1}>
-      Last time · <Text className="font-archivo-bold text-text">{describeSet(set, measuredBy)}</Text>
+    <Text
+      className="font-archivo text-[13px] text-muted text-center mb-1.5"
+      numberOfLines={1}
+    >
+      {`Last time · }`}
+      <Text className="font-archivo-bold text-text">
+        {describeSet(set, measuredBy)}
+      </Text>
     </Text>
   );
 }
@@ -387,7 +403,7 @@ function LastSetLine({
       Set {set.setNumber} ·{" "}
       <Text className="font-archivo-bold text-text">
         {unit === "note" ? value : `${value} ${unit}${weight}`}
-      </Text>{" "}
+      </Text>
       <Text className="text-accent">✓</Text>
     </Text>
   );
