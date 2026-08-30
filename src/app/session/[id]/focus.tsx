@@ -31,6 +31,7 @@ import { describeSet } from "@/lib/describe-set";
 import { formatClock, formatWeight } from "@/lib/format";
 import { restDurationFor } from "@/lib/rest";
 import { useSessionStore } from "@/lib/session-store";
+import { playTimerSound } from "@/lib/sounds";
 import { useNow } from "@/lib/use-now";
 
 export default function SetFocus() {
@@ -505,8 +506,9 @@ function TimeFocus({
 
   // The countdown crossing zero is a clock event, not a tap — log the target once it happens.
   useEffect(() => {
-    if (reachedTarget)
-      onComplete({ timeSec: targetSec, weightKg: entry.targetWeightKg });
+    if (!reachedTarget) return;
+    void playTimerSound("time");
+    onComplete({ timeSec: targetSec, weightKg: entry.targetWeightKg });
   }, [reachedTarget, onComplete, targetSec, entry.targetWeightKg]);
 
   const label = running ? "Pause" : elapsedMs > 0 ? "Resume" : "Start hold";

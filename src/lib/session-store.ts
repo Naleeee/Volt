@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { playTimerSound } from "@/lib/sounds";
 
 type SessionState = {
   sessionId: number | null;
@@ -64,3 +65,16 @@ export const useSessionStore = create<SessionState>((set) => ({
   clearRest: () => set({ restEndsAt: null }),
   end: () => set(idle),
 }));
+
+let restTimer: ReturnType<typeof setTimeout> | undefined;
+
+// Rest can end on any session screen, so the cue follows the store rather than a component.
+useSessionStore.subscribe((state, prev) => {
+  if (state.restEndsAt === prev.restEndsAt) return;
+  clearTimeout(restTimer);
+  if (state.restEndsAt !== null)
+    restTimer = setTimeout(
+      () => void playTimerSound("rest"),
+      Math.max(0, state.restEndsAt - Date.now()),
+    );
+});
