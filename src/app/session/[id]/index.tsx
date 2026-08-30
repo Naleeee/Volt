@@ -1,4 +1,6 @@
 import { useNavigation, usePreventRemove } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
+import { useKeepAwake } from "expo-keep-awake";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Alert, FlatList, Text, View } from "react-native";
@@ -88,6 +90,7 @@ export default function SessionChecklist() {
 
   const logCurrentSet = (setNumber: number) => {
     if (!position) return;
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const entry = session.entries[position.exerciseIndex];
     logSet({
       sessionId,
@@ -133,6 +136,7 @@ export default function SessionChecklist() {
 
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
+      {settings.keepAwake ? <KeepAwake /> : null}
       <View className="flex-row items-center justify-between px-5 pt-3">
         <View>
           <Text className="font-archivo-bold text-[11px] tracking-[1.5px] text-muted">
@@ -227,4 +231,10 @@ export default function SessionChecklist() {
       ) : null}
     </View>
   );
+}
+
+// Hooks can't be conditional, so the setting mounts and unmounts this instead.
+function KeepAwake() {
+  useKeepAwake();
+  return null;
 }
