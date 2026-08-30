@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toggle from "@/components/UI/Toggle";
 import { colors } from "@/constants/theme";
 import { restSeconds, setSetting, useSettings } from "@/db/queries/settings";
+import { exportHistory } from "@/lib/export-history";
 import { formatClock } from "@/lib/format";
 import { toast } from "@/lib/toast";
 
@@ -22,6 +23,12 @@ export default function SettingsScreen() {
     const next = settings[key] + delta;
     if (restSeconds.safeParse(next).success) void setSetting(key, next);
   };
+  const onExport = () =>
+    exportHistory()
+      .then((exported) => {
+        if (!exported) toast.info("Nothing to export yet");
+      })
+      .catch(() => toast.error("Export failed"));
 
   return (
     <View
@@ -84,7 +91,7 @@ export default function SettingsScreen() {
         </Section>
 
         <Section title="Data">
-          <Row label="Export history" onPress={() => toast.info("Coming soon")}>
+          <Row label="Export history" onPress={onExport}>
             <Chevron />
           </Row>
           <Row
