@@ -3,7 +3,13 @@ import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { z } from "zod";
 import { MEASURED_BY, MeasuredBy } from "@/lib/enums";
 import { db } from "../client";
-import { exercises, routineExercises, routines, type Exercise } from "../schema";
+import { useLiveTables } from "../live";
+import {
+  exercises,
+  routineExercises,
+  routines,
+  type Exercise,
+} from "../schema";
 
 export type RoutineSummary = {
   id: number;
@@ -12,22 +18,29 @@ export type RoutineSummary = {
   lastPerformedAt: number | null;
 };
 
-// Live on the `routines` table only: useLiveQuery watches the `from` table, so writes to
-// routine_exercises or sessions alone don't re-run this until a routine row changes.
 export function useRoutines(): RoutineSummary[] {
-  const { data } = useLiveQuery(
-    db
-      .select({
-        id: routines.id,
-        name: routines.name,
-        exerciseCount: sql<number>`(select count(*) from routine_exercises re where re.routine_id = ${routines.id})`.mapWith(Number),
-        lastPerformedAt: sql<number | null>`(select max(s.ended_at) from sessions s where s.routine_id = ${routines.id})`,
-      })
-      .from(routines)
-      .where(isNull(routines.archivedAt))
-      .orderBy(asc(routines.createdAt)),
+  return (
+    useLiveTables(
+      () =>
+        db
+          .select({
+            id: routines.id,
+            name: routines.name,
+            exerciseCount:
+              sql<number>`(select count(*) from routine_exercises re where re.routine_id = "routines"."id")`.mapWith(
+                Number,
+              ),
+            lastPerformedAt: sql<
+              number | null
+            >`(select max(s.ended_at) from sessions s where s.routine_id = "routines"."id")`,
+          })
+          .from(routines)
+          .where(isNull(routines.archivedAt))
+          .orderBy(asc(routines.createdAt))
+          .all(),
+      ["routines", "routine_exercises", "sessions"],
+    ) ?? []
   );
-  return data;
 }
 
 // ── Builder form ──────────────────────────────────────────────────────────────
@@ -66,7 +79,9 @@ export function defaultEntry(
   };
 }
 
-export type RoutineDetail = RoutineFormValues & { lastPerformedAt: number | null };
+export type RoutineDetail = RoutineFormValues & {
+  lastPerformedAt: number | null;
+};
 
 // Detail + edit screens: undefined until both the routine row and its entries have loaded.
 export function useRoutine(id: number): RoutineDetail | undefined {
@@ -74,7 +89,9 @@ export function useRoutine(id: number): RoutineDetail | undefined {
     db
       .select({
         name: routines.name,
-        lastPerformedAt: sql<number | null>`(select max(s.ended_at) from sessions s where s.routine_id = ${routines.id})`,
+        lastPerformedAt: sql<
+          number | null
+        >`(select max(s.ended_at) from sessions s where s.routine_id = "routines"."id")`,
       })
       .from(routines)
       .where(eq(routines.id, id)),

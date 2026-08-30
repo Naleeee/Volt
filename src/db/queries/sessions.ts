@@ -1,4 +1,16 @@
-import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
+import { startOfWeek, subWeeks } from "date-fns";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  ne,
+  sql,
+} from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db } from "../client";
 import {
@@ -162,7 +174,10 @@ export function useLastPerformedSet(
   return data[0]?.set;
 }
 
-export function useGhostSets(exerciseIds: number[], excludeSessionId: number): SessionSet[] {
+export function useGhostSets(
+  exerciseIds: number[],
+  excludeSessionId: number,
+): SessionSet[] {
   const key = exerciseIds.join(",");
   const { data } = useLiveQuery(
     db
@@ -171,7 +186,10 @@ export function useGhostSets(exerciseIds: number[], excludeSessionId: number): S
       .innerJoin(sessions, eq(sessions.id, sessionSets.sessionId))
       .where(
         and(
-          inArray(sessionSets.exerciseId, exerciseIds.length ? exerciseIds : [-1]),
+          inArray(
+            sessionSets.exerciseId,
+            exerciseIds.length ? exerciseIds : [-1],
+          ),
           ne(sessions.id, excludeSessionId),
           isNotNull(sessions.endedAt),
           eq(sessionSets.skipped, false),
@@ -188,6 +206,83 @@ export function useGhostSets(exerciseIds: number[], excludeSessionId: number): S
       return row.sessionId === sessionId;
     })
     .map((row) => row.set);
+}
+
+export type WeekStats = {
+  workouts: number;
+  trainedSec: number;
+  setsLogged: number;
+  streakWeeks: number;
+};
+
+const WEEK = { weekStartsOn: 1 as const }; // Monday, local time
+
+// This week's completed sessions (in-progress ones don't count yet) plus the weekly streak.
+export function useWeekStats(): WeekStats {
+  const weekStart = startOfWeek(new Date(), WEEK).getTime();
+
+  const week = useLiveQuery(
+    db
+      .select({
+        workouts: sql<number>`count(*)`.mapWith(Number),
+        trainedMs:
+          sql<number>`coalesce(sum(${sessions.endedAt} - ${sessions.startedAt}), 0)`.mapWith(
+            Number,
+          ),
+      })
+      .from(sessions)
+      .where(
+        and(isNotNull(sessions.endedAt), gte(sessions.startedAt, weekStart)),
+      ),
+    [weekStart],
+  );
+  const setsThisWeek = useLiveQuery(
+    db
+      .select({ setsLogged: sql<number>`count(*)`.mapWith(Number) })
+      .from(sessionSets)
+      .innerJoin(sessions, eq(sessions.id, sessionSets.sessionId))
+      .where(
+        and(
+          isNotNull(sessions.endedAt),
+          gte(sessions.startedAt, weekStart),
+          eq(sessionSets.skipped, false),
+        ),
+      ),
+    [weekStart],
+  );
+  const history = useLiveQuery(
+    db
+      .select({ startedAt: sessions.startedAt })
+      .from(sessions)
+      .where(isNotNull(sessions.endedAt)),
+  );
+
+  return {
+    workouts: week.data[0]?.workouts ?? 0,
+    trainedSec: Math.round((week.data[0]?.trainedMs ?? 0) / 1000),
+    setsLogged: setsThisWeek.data[0]?.setsLogged ?? 0,
+    streakWeeks: streakWeeks(
+      history.data.map((r) => r.startedAt),
+      weekStart,
+    ),
+  };
+}
+
+// Consecutive weeks with ≥1 completed session, counted back from this week — or from last week
+// while this one is still empty, so a streak isn't lost on Monday morning.
+export function streakWeeks(sessionStarts: number[], weekStart: number) {
+  const weeks = new Set(
+    sessionStarts.map((t) => startOfWeek(t, WEEK).getTime()),
+  );
+  let cursor = weeks.has(weekStart)
+    ? weekStart
+    : subWeeks(weekStart, 1).getTime();
+  let streak = 0;
+  while (weeks.has(cursor)) {
+    streak += 1;
+    cursor = subWeeks(cursor, 1).getTime();
+  }
+  return streak;
 }
 
 // ── writes (all synchronous on this driver) ───────────────────────────────────

@@ -36,3 +36,11 @@ export function formatLastPerformedLine(ts: number | null) {
   const label = formatLastPerformed(ts);
   return ts == null || label === "Today" ? label : `Last: ${label}`;
 }
+
+// "3h 12m" · "45m" · "0m" — whole minutes, for totals rather than clocks.
+export function formatDuration(totalSec: number) {
+  const minutes = Math.round(totalSec / 60);
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return h > 0 ? `${h}h ${String(m).padStart(2, "0")}m` : `${m}m`;
+}
