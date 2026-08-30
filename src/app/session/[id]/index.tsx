@@ -1,4 +1,5 @@
 import { useNavigation, usePreventRemove } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Alert, FlatList, Text, View } from "react-native";
@@ -88,6 +89,7 @@ export default function SessionChecklist() {
 
   const logCurrentSet = (setNumber: number) => {
     if (!position) return;
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const entry = session.entries[position.exerciseIndex];
     logSet({
       sessionId,

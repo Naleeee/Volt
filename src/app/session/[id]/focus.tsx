@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, Minus, Pause, Play, Plus } from "lucide-react-native";
 import { useEffect, useState, type ReactNode } from "react";
@@ -87,6 +88,7 @@ export default function SetFocus() {
     weightKg?: number | null;
     note?: string | null;
   }) => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     logSet({ sessionId, exerciseId: entry.exerciseId, setNumber, ...values });
     const last = setNumber >= entry.targetSets;
     resetHold();
@@ -649,7 +651,10 @@ function StepButton({
 }) {
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        void Haptics.selectionAsync();
+        onPress();
+      }}
       accessibilityRole="button"
       accessibilityLabel={label}
       className={`${small ? "w-11 h-11" : "w-[68px] h-[68px]"} rounded-full bg-card2 border border-line items-center justify-center active:scale-95 active:opacity-90`}
