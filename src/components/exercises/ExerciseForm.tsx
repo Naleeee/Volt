@@ -13,6 +13,7 @@ import {
 } from "@/db/queries/exercises";
 import { MeasuredBy } from "@/lib/enums";
 import { toast } from "@/lib/toast";
+import Button from "../UI/Button";
 
 const MEASURED_BY_OPTIONS = [
   { value: MeasuredBy.Reps, label: "Reps" },
@@ -103,6 +104,17 @@ export default function ExerciseForm({ title, initial, onSave }: Props) {
               error={errors.notes?.message}
             />
           )}
+        />
+      </View>
+      <View
+        className="flex-1 px-4 flex-grow justify-end"
+        style={{ paddingBottom: insets.bottom + 16 }}
+      >
+        <Button
+          variant="secondary"
+          label="Archive exercise"
+          onPress={submit}
+          disabled={isSubmitting}
         />
       </View>
     </View>
