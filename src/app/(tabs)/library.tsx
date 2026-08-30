@@ -36,7 +36,7 @@ export default function Index() {
           {visible.length}
         </Text>
       </View>
-      {exercises.length === 0 ? (
+      {exercises.length !== 0 ? (
         <>
           <View className="gap-3">
             <SearchBar
