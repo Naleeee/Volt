@@ -120,6 +120,7 @@ export default function SessionChecklist() {
       finishSession(sessionId);
       end();
       router.dismissTo("/");
+      router.push({ pathname: "/session/[id]/summary", params: { id } });
     };
     if (!position) return complete();
     const remaining =
