@@ -13,7 +13,7 @@ import {
 import { useSessionStore } from "@/lib/session-store";
 import { format } from "date-fns";
 import { router } from "expo-router";
-import { Plus, Zap } from "lucide-react-native";
+import { Plus, Zap, Dumbbell } from "lucide-react-native";
 import { Alert, FlatList, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -70,55 +70,85 @@ export default function Index() {
             Workouts
           </Text>
         </View>
-        <View className="flex flex-row justify-center items-center gap-2 bg-card rounded-3xl p-3 py-2 border border-muted">
-          <Zap color={colors.accent} size={14} fill={colors.accent} />
-          <Text className="font-archivo text-md text-text">{stats.streakWeeks} wk</Text>
-        </View>
-      </View>
-
-      <RoutinesStatsPill
-        workouts={stats.workouts}
-        trainedSec={stats.trainedSec}
-        setsLogged={stats.setsLogged}
-      />
-
-      <FlatList
-        data={routines}
-        keyExtractor={(routine) => String(routine.id)}
-        contentContainerStyle={{ paddingBottom: 32, gap: 10 }}
-        ListHeaderComponent={
-          <View className="gap-4">
-            {active ? (
-              <ResumeBar
-                session={active}
-                onResume={resume}
-                onDiscard={discard}
-              />
-            ) : null}
-            <Text className="font-archivo-bold text-[11px] tracking-[1.5px] text-muted mt-2">
-              MY ROUTINES
+        {routines.length !== 0 && (
+          <View className="flex flex-row justify-center items-center gap-2 bg-card rounded-3xl p-3 py-2 border border-muted">
+            <Zap color={colors.accent} size={14} fill={colors.accent} />
+            <Text className="font-archivo text-md text-text">
+              {stats.streakWeeks} wk
             </Text>
           </View>
-        }
-        ListFooterComponent={
+        )}
+      </View>
+
+      {routines.length !== 0 && (
+        <RoutinesStatsPill
+          workouts={stats.workouts}
+          trainedSec={stats.trainedSec}
+          setsLogged={stats.setsLogged}
+        />
+      )}
+
+      {routines.length !== 0 ? (
+        <FlatList
+          data={routines}
+          keyExtractor={(routine) => String(routine.id)}
+          contentContainerStyle={{ paddingBottom: 32, gap: 10 }}
+          ListHeaderComponent={
+            <View className="gap-4">
+              {active ? (
+                <ResumeBar
+                  session={active}
+                  onResume={resume}
+                  onDiscard={discard}
+                />
+              ) : null}
+              <Text className="font-archivo-bold text-[11px] tracking-[1.5px] text-muted mt-2">
+                MY ROUTINES
+              </Text>
+            </View>
+          }
+          ListFooterComponent={
+            <Button
+              variant="dashed"
+              icon={Plus}
+              label="New routine"
+              onPress={() => router.push("/routine/new")}
+            />
+          }
+          renderItem={({ item }) => (
+            <RoutineCard
+              name={item.name}
+              exerciseCount={item.exerciseCount}
+              lastPerformedAt={item.lastPerformedAt}
+              inProgress={active?.routineId === item.id}
+              onPress={() => openRoutine(item.id)}
+              onStart={() => openRoutine(item.id)}
+            />
+          )}
+        />
+      ) : (
+        <View className="flex-1 justify-center items-center gap-4">
+          <View className="w-24 h-24 rounded-full bg-card border border-muted/30 justify-center items-center">
+            <Dumbbell color={colors.accent} size={32} />
+          </View>
+          <Text className="font-archivo-bold text-lg text-text">
+            No routines yet
+          </Text>
+          <Text className="font-archivo text-sm text-muted text-center w-2/3 self-center">
+            Create a routine to start tracking your workouts and progress.
+          </Text>
           <Button
-            variant="dashed"
-            icon={Plus}
+            variant="primary"
             label="New routine"
             onPress={() => router.push("/routine/new")}
           />
-        }
-        renderItem={({ item }) => (
-          <RoutineCard
-            name={item.name}
-            exerciseCount={item.exerciseCount}
-            lastPerformedAt={item.lastPerformedAt}
-            inProgress={active?.routineId === item.id}
-            onPress={() => openRoutine(item.id)}
-            onStart={() => openRoutine(item.id)}
+          <Button
+            variant="outline"
+            label="Browse exercices"
+            onPress={() => router.push("/library")}
           />
-        )}
-      />
+        </View>
+      )}
     </View>
   );
 }
