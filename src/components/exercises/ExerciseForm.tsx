@@ -13,6 +13,7 @@ import {
 } from "@/db/queries/exercises";
 import { MeasuredBy } from "@/lib/enums";
 import { toast } from "@/lib/toast";
+import Button from "../UI/Button";
 
 const MEASURED_BY_OPTIONS = [
   { value: MeasuredBy.Reps, label: "Reps" },
@@ -20,13 +21,19 @@ const MEASURED_BY_OPTIONS = [
   { value: MeasuredBy.Other, label: "Other" },
 ] as const;
 
-type Props = {
+type ExerciseFormProps = {
   title: string;
   initial: ExerciseFormValues;
   onSave: (values: ExerciseFormValues) => Promise<unknown>;
+  onArchive?: () => Promise<unknown>;
 };
 
-export default function ExerciseForm({ title, initial, onSave }: Props) {
+export default function ExerciseForm({
+  title,
+  initial,
+  onSave,
+  onArchive,
+}: ExerciseFormProps) {
   const insets = useSafeAreaInsets();
   const {
     control,
@@ -44,6 +51,17 @@ export default function ExerciseForm({ title, initial, onSave }: Props) {
     } catch (error) {
       if (__DEV__) console.error(error);
       toast.error("Couldn't save the exercise. Try again.");
+    }
+  });
+
+  const archive = handleSubmit(async () => {
+    try {
+      if (!onArchive) return;
+      await onArchive();
+      router.back();
+    } catch (error) {
+      if (__DEV__) console.error(error);
+      toast.error("Couldn't archive the exercise. Try again.");
     }
   });
 
@@ -103,6 +121,17 @@ export default function ExerciseForm({ title, initial, onSave }: Props) {
               error={errors.notes?.message}
             />
           )}
+        />
+      </View>
+      <View
+        className="flex-1 px-4 flex-grow justify-end"
+        style={{ paddingBottom: insets.bottom + 16 }}
+      >
+        <Button
+          variant="secondary"
+          label="Archive exercise"
+          onPress={archive}
+          disabled={isSubmitting}
         />
       </View>
     </View>

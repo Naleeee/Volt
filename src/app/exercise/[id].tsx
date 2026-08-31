@@ -2,7 +2,11 @@ import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 import ExerciseForm from "@/components/exercises/ExerciseForm";
 import { colors } from "@/constants/theme";
-import { updateExercise, useExercise } from "@/db/queries/exercises";
+import {
+  updateExercise,
+  useExercise,
+  archiveExercise,
+} from "@/db/queries/exercises";
 
 export default function EditExercise() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -26,6 +30,7 @@ export default function EditExercise() {
         notes: exercise.notes ?? "",
       }}
       onSave={(values) => updateExercise(exerciseId, values)}
+      onArchive={() => archiveExercise(exerciseId)}
     />
   );
 }

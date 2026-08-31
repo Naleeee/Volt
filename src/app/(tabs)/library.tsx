@@ -5,9 +5,9 @@ import SearchBar from "@/components/UI/SearchBar";
 import { router } from "expo-router";
 import { useState } from "react";
 import { LayoutGrid, Plus } from "lucide-react-native";
-import { FlatList, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useExercises } from "@/db/queries/exercises";
+import { useArchivedExercises, useExercises } from "@/db/queries/exercises";
 import { MEASURED_BY_FILTERS, MeasuredByFilter } from "@/constants/exercises";
 import { colors } from "@/constants/theme";
 import Button from "@/components/UI/Button";
@@ -17,6 +17,7 @@ export default function Index() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<MeasuredByFilter>("all");
   const exercises = useExercises();
+  const archived = useArchivedExercises();
 
   const needle = query.trim().toLowerCase();
   const visible = exercises.filter(
@@ -36,7 +37,7 @@ export default function Index() {
           {visible.length}
         </Text>
       </View>
-      {exercises.length === 0 ? (
+      {exercises.length !== 0 ? (
         <>
           <View className="gap-3">
             <SearchBar
@@ -57,6 +58,20 @@ export default function Index() {
             columnWrapperStyle={{ gap: 16 }}
             contentContainerStyle={{ paddingBottom: 96, gap: 16 }}
             keyboardShouldPersistTaps="handled"
+            ListFooterComponent={
+              archived.length > 0 ? (
+                <Pressable
+                  onPress={() => router.push("/exercise/archived")}
+                  accessibilityRole="button"
+                  hitSlop={8}
+                  className="py-2 active:opacity-80"
+                >
+                  <Text className="font-archivo-bold text-sm text-muted text-center">
+                    Archived ({archived.length})
+                  </Text>
+                </Pressable>
+              ) : null
+            }
             ListEmptyComponent={
               <Text className="font-archivo text-sm text-muted text-center mt-8">
                 No exercises match.
@@ -94,6 +109,18 @@ export default function Index() {
             label="New exercise"
             onPress={() => router.push("/exercise/new")}
           />
+          {archived.length > 0 ? (
+            <Pressable
+              onPress={() => router.push("/exercise/archived")}
+              accessibilityRole="button"
+              hitSlop={8}
+              className="active:opacity-80"
+            >
+              <Text className="font-archivo-bold text-sm text-accent">
+                View archived ({archived.length})
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
       )}
     </View>
