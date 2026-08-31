@@ -21,13 +21,19 @@ const MEASURED_BY_OPTIONS = [
   { value: MeasuredBy.Other, label: "Other" },
 ] as const;
 
-type Props = {
+type ExerciseFormProps = {
   title: string;
   initial: ExerciseFormValues;
   onSave: (values: ExerciseFormValues) => Promise<unknown>;
+  onArchive?: () => Promise<unknown>;
 };
 
-export default function ExerciseForm({ title, initial, onSave }: Props) {
+export default function ExerciseForm({
+  title,
+  initial,
+  onSave,
+  onArchive,
+}: ExerciseFormProps) {
   const insets = useSafeAreaInsets();
   const {
     control,
@@ -45,6 +51,17 @@ export default function ExerciseForm({ title, initial, onSave }: Props) {
     } catch (error) {
       if (__DEV__) console.error(error);
       toast.error("Couldn't save the exercise. Try again.");
+    }
+  });
+
+  const archive = handleSubmit(async () => {
+    try {
+      if (!onArchive) return;
+      await onArchive();
+      router.back();
+    } catch (error) {
+      if (__DEV__) console.error(error);
+      toast.error("Couldn't archive the exercise. Try again.");
     }
   });
 
@@ -113,7 +130,7 @@ export default function ExerciseForm({ title, initial, onSave }: Props) {
         <Button
           variant="secondary"
           label="Archive exercise"
-          onPress={submit}
+          onPress={archive}
           disabled={isSubmitting}
         />
       </View>

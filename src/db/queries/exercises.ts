@@ -1,4 +1,4 @@
-import { asc, eq, isNull } from "drizzle-orm";
+import { asc, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { z } from "zod";
 import { MEASURED_BY, MeasuredBy } from "@/lib/enums";
@@ -35,6 +35,18 @@ export function useExercises() {
   return data;
 }
 
+// Archived list: most recently archived first.
+export function useArchivedExercises() {
+  const { data } = useLiveQuery(
+    db
+      .select()
+      .from(exercises)
+      .where(isNotNull(exercises.archivedAt))
+      .orderBy(desc(exercises.archivedAt), asc(exercises.name)),
+  );
+  return data;
+}
+
 // Edit screen: undefined while loading or when the id doesn't exist.
 export function useExercise(id: number) {
   const { data } = useLiveQuery(
@@ -51,6 +63,20 @@ export async function insertExercise(values: ExerciseFormValues) {
 
 export async function updateExercise(id: number, values: ExerciseFormValues) {
   await db.update(exercises).set(toRow(values)).where(eq(exercises.id, id));
+}
+
+export async function archiveExercise(id: number) {
+  await db
+    .update(exercises)
+    .set({ archivedAt: Date.now() })
+    .where(eq(exercises.id, id));
+}
+
+export async function unarchiveExercise(id: number) {
+  await db
+    .update(exercises)
+    .set({ archivedAt: null })
+    .where(eq(exercises.id, id));
 }
 
 // Empty notes are stored as NULL, not "".
