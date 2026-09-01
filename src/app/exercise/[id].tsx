@@ -27,6 +27,8 @@ export default function EditExercise() {
       initial={{
         name: exercise.name,
         measuredBy: exercise.measuredBy,
+        mediaPath: exercise.mediaPath,
+        mediaType: exercise.mediaType,
         notes: exercise.notes ?? "",
       }}
       onSave={(values) => updateExercise(exerciseId, values)}
