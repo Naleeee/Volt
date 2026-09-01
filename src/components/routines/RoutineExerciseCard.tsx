@@ -2,6 +2,7 @@ import { GripVertical, X } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import TypeBadge from "@/components/exercises/TypeBadge";
+import MediaThumb from "@/components/UI/MediaThumb";
 import { MEASURED_BY_STYLES } from "@/constants/exercises";
 import { colors } from "@/constants/theme";
 import type { RoutineEntry } from "@/db/queries/routines";
@@ -35,7 +36,7 @@ export default function RoutineExerciseCard({
 
   return (
     <View
-      className={`bg-card border ${dragging ? type.ring : "border-line"} border-l-[3px] ${type.edge} rounded-[18px] p-2.5`}
+      className={`bg-card border ${dragging ? type.ring : "border-line"} border-l-4 ${type.edge} rounded-2xl p-2.5`}
     >
       <View className="flex-row items-center gap-3">
         {onDrag ? (
@@ -50,16 +51,25 @@ export default function RoutineExerciseCard({
             <GripVertical size={18} color={colors.muted} />
           </Pressable>
         ) : null}
-        <View className="w-12 h-12 rounded-[11px] bg-card2" />
+        <MediaThumb
+          path={entry.mediaPath}
+          type={entry.mediaType}
+          className="w-12 h-12 rounded-xl"
+        />
         <View className="flex-1">
           <View className="flex-row items-center gap-2">
-            <Text className="font-archivo-bold text-[15px] text-text shrink" numberOfLines={1}>
+            <Text
+              className="font-archivo-bold text-base text-text shrink"
+              numberOfLines={1}
+            >
               {entry.name}
             </Text>
             <TypeBadge measuredBy={entry.measuredBy} />
           </View>
           {onDrag ? (
-            <Text className="font-archivo text-xs text-muted mt-0.5">hold to reorder</Text>
+            <Text className="font-archivo text-xs text-muted mt-0.5">
+              hold to reorder
+            </Text>
           ) : null}
         </View>
         <Pressable
@@ -94,7 +104,9 @@ export default function RoutineExerciseCard({
             labelClass={type.text}
             unit="sec"
             value={entry.targetTimeSec}
-            onCommit={(v) => onChange({ targetTimeSec: v ?? entry.targetTimeSec })}
+            onCommit={(v) =>
+              onChange({ targetTimeSec: v ?? entry.targetTimeSec })
+            }
           />
         ) : null}
         {entry.measuredBy !== MeasuredBy.Other && hasWeight ? (
@@ -116,7 +128,9 @@ export default function RoutineExerciseCard({
           hitSlop={8}
           className="self-end mt-1.5 active:opacity-80"
         >
-          <Text className="font-archivo-semibold text-xs text-muted">+ Add weight</Text>
+          <Text className="font-archivo-semibold text-xs text-muted">
+            + Add weight
+          </Text>
         </Pressable>
       ) : null}
 
@@ -158,7 +172,11 @@ function NumberField({
 
   return (
     <View className="flex-1 bg-card2 border border-line rounded-xl py-1 items-center">
-      <Text className={`font-archivo-bold text-[9px] tracking-[1px] ${labelClass}`}>{label}</Text>
+      <Text
+        className={`font-archivo-bold text-xs tracking-widest ${labelClass}`}
+      >
+        {label}
+      </Text>
       <View className="flex-row items-baseline justify-center">
         <TextInput
           value={text}
@@ -168,11 +186,11 @@ function NumberField({
           returnKeyType="done"
           selectTextOnFocus
           accessibilityLabel={label}
-          className="font-archivo-black text-[15px] text-text text-center p-0 min-w-[28px]"
+          className="font-archivo-black text-base text-text text-center p-0 min-w-6"
           style={{ fontVariant: ["tabular-nums"], includeFontPadding: false }}
         />
         {unit ? (
-          <Text className="font-archivo-bold text-[11px] text-muted"> {unit}</Text>
+          <Text className="font-archivo-bold text-xs text-muted"> {unit}</Text>
         ) : null}
       </View>
     </View>

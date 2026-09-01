@@ -1,4 +1,5 @@
 import { Text, View } from "react-native";
+import MediaThumb from "@/components/UI/MediaThumb";
 import { MEASURED_BY_STYLES } from "@/constants/exercises";
 import type { RoutineEntry } from "@/db/queries/routines";
 import { MeasuredBy } from "@/lib/enums";
@@ -9,7 +10,11 @@ export default function RoutineExerciseRow({ entry }: { entry: RoutineEntry }) {
   const type = MEASURED_BY_STYLES[entry.measuredBy];
   return (
     <View className="flex-row items-center gap-2.5 bg-card border border-line rounded-[18px] py-1.5 px-3">
-      <View className="w-11 h-11 rounded-xl bg-card2" />
+      <MediaThumb
+        path={entry.mediaPath}
+        type={entry.mediaType}
+        className="w-11 h-11 rounded-xl"
+      />
       <View className="flex-1">
         <Text className="font-archivo-bold text-[15px] text-text" numberOfLines={1}>
           {entry.name}

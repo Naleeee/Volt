@@ -1,5 +1,6 @@
 import { Check } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
+import MediaThumb from "@/components/UI/MediaThumb";
 import { colors } from "@/constants/theme";
 import type { SessionEntry } from "@/db/queries/sessions";
 import type { SessionSet } from "@/db/schema";
@@ -41,7 +42,11 @@ export function CollapsedExerciseCard({
       accessibilityLabel={onPress ? `Show ${entry.name} sets` : undefined}
       className={`flex-row items-center gap-2.5 bg-card border border-line rounded-2xl px-3 py-2.5 ${complete ? "opacity-55 active:opacity-80" : ""}`}
     >
-      <View className="w-10 h-10 rounded-lg bg-card2" />
+      <MediaThumb
+        path={entry.mediaPath}
+        type={entry.mediaType}
+        className="w-10 h-10 rounded-lg"
+      />
       <View className="flex-1">
         <Text
           className={`font-archivo-bold text-base text-text ${complete ? "line-through" : ""}`}
@@ -136,7 +141,11 @@ export function ExpandedExerciseCard({
         accessibilityLabel={onCollapse ? `Hide ${entry.name} sets` : undefined}
         className="flex-row items-center gap-2.5"
       >
-        <View className="w-10 h-10 rounded-lg bg-card2" />
+        <MediaThumb
+          path={entry.mediaPath}
+          type={entry.mediaType}
+          className="w-10 h-10 rounded-lg"
+        />
         <View className="flex-1">
           <Text
             className="font-archivo-bold text-base text-text"
