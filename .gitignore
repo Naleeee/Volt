@@ -35,4 +35,4 @@ yarn-error.*
 *.tsbuildinfo
 
 # Builds output
-andorid/
+android/
