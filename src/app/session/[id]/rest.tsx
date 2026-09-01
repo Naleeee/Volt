@@ -66,7 +66,7 @@ export default function RestScreen() {
 
   return (
     <Screen>
-      <Text className="font-archivo-bold text-sm tracking-[2px] text-muted text-center mt-2.5">
+      <Text className="font-archivo-bold text-sm tracking-widest text-muted text-center mt-2.5">
         {session ? `${session.routineName.toUpperCase()} · REST` : "REST"}
       </Text>
 
@@ -77,7 +77,7 @@ export default function RestScreen() {
           color={colors.accent}
         >
           <Text
-            className="font-archivo-black text-[76px] text-text tracking-[-2px]"
+            className="font-archivo-black text-7xl text-text tracking-tight"
             style={{
               fontVariant: ["tabular-nums"],
               lineHeight: 76,
@@ -86,11 +86,11 @@ export default function RestScreen() {
           >
             {formatClock(Math.max(0, remainingSec))}
           </Text>
-          <Text className="font-archivo-bold text-sm tracking-[2.4px] text-muted mt-2">
+          <Text className="font-archivo-bold text-sm tracking-widest text-muted mt-2">
             REST
           </Text>
         </TimerRing>
-        <View className="flex-row gap-3 mt-[30px]">
+        <View className="flex-row gap-3 mt-8">
           <Button
             variant="secondary"
             size="md"
@@ -116,7 +116,7 @@ export default function RestScreen() {
           className="w-11 h-11 rounded-xl"
         />
         <View className="flex-1">
-          <Text className="font-archivo-bold text-sm tracking-[1.3px] text-muted">
+          <Text className="font-archivo-bold text-sm tracking-widest text-muted">
             UP NEXT
           </Text>
           <Text

@@ -11,14 +11,14 @@ type Props = {
 export default function FormHeader({ title, onCancel, onSave, saving }: Props) {
   return (
     <View className="flex justify-center items-center flex-row bg-bg px-6 py-4">
-      <Pressable className="w-[60px]" onPress={onCancel} disabled={saving}>
+      <Pressable className="w-16" onPress={onCancel} disabled={saving}>
         <Text className="font-archivo text-base text-muted">Cancel</Text>
       </Pressable>
       <Text className="font-archivo-bold text-2xl flex-grow text-center text-text">
         {title}
       </Text>
       <Pressable
-        className="w-[60px] items-end"
+        className="w-16 items-end"
         onPress={onSave}
         disabled={saving}
       >

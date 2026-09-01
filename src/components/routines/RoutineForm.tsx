@@ -98,7 +98,7 @@ export default function RoutineForm({ title, initial, onSave }: Props) {
               )}
             />
             <View className="flex-row items-baseline justify-between mt-4 px-4">
-              <Text className="font-archivo-bold text-sm tracking-[1.5px] text-muted">
+              <Text className="font-archivo-bold text-sm tracking-widest text-muted">
                 EXERCISES · {fields.length}
               </Text>
             </View>
@@ -136,7 +136,7 @@ export default function RoutineForm({ title, initial, onSave }: Props) {
             onPress={() => setPickerOpen(true)}
             loading={isSubmitting}
             icon={Plus}
-            className="w-[7rem]"
+            className="w-28"
           />
           <Button
             label="Save routine"

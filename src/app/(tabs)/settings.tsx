@@ -96,7 +96,7 @@ export default function SettingsScreen() {
             label="Language"
             onPress={() => toast.info("English only for now")}
           >
-            <Text className="font-archivo-semibold text-[15px] text-muted">
+            <Text className="font-archivo-semibold text-base text-muted">
               English
             </Text>
             <Chevron />
@@ -133,10 +133,10 @@ export default function SettingsScreen() {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <View>
-      <Text className="font-archivo-bold text-xs tracking-[1.5px] text-muted mb-2 px-1">
+      <Text className="font-archivo-bold text-xs tracking-widest text-muted mb-2 px-1">
         {title.toUpperCase()}
       </Text>
-      <View className="bg-card border border-line rounded-[20px] px-4">
+      <View className="bg-card border border-line rounded-3xl px-4">
         {Children.toArray(children).map((child, i) => (
           <View key={i} className={i > 0 ? "border-t border-line" : ""}>
             {child}
@@ -199,7 +199,7 @@ function Stepper({
         onPress={() => onStep(-REST_STEP_SEC)}
       />
       <Text
-        className="min-w-[46px] text-center font-archivo-black text-base text-text"
+        className="min-w-12 text-center font-archivo-black text-base text-text"
         style={{ fontVariant: ["tabular-nums"] }}
       >
         {value}
@@ -227,7 +227,7 @@ function StepButton({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
-      className="w-[34px] h-[34px] rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
+      className="w-9 h-9 rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
     >
       <Icon size={14} strokeWidth={2.4} color={colors.text} />
     </Pressable>

@@ -16,8 +16,8 @@ export default function VTextInput({ label, optional, error, ...props }: Props) 
         textAlignVertical={props.multiline ? "top" : "center"}
         className={
           props.multiline
-            ? `bg-card2 border ${border} rounded-2xl min-h-[92px] px-4 py-4 font-archivo text-sm leading-5 text-text placeholder:text-muted`
-            : `bg-card2 border ${border} rounded-2xl h-[52px] px-4 font-archivo-semibold text-base text-text placeholder:text-muted`
+            ? `bg-card2 border ${border} rounded-2xl min-h-24 px-4 py-4 font-archivo text-sm leading-5 text-text placeholder:text-muted`
+            : `bg-card2 border ${border} rounded-2xl h-14 px-4 font-archivo-semibold text-base text-text placeholder:text-muted`
         }
         {...props}
       />

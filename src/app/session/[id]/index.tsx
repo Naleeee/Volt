@@ -141,11 +141,11 @@ export default function SessionChecklist() {
       {settings.keepAwake ? <KeepAwake /> : null}
       <View className="flex-row items-center justify-between px-5 pt-3">
         <View>
-          <Text className="font-archivo-bold text-[11px] tracking-[1.5px] text-muted">
+          <Text className="font-archivo-bold text-xs tracking-widest text-muted">
             {session.routineName.toUpperCase()}
           </Text>
           <Text
-            className="font-archivo-black text-[22px] text-text mt-0.5"
+            className="font-archivo-black text-2xl text-text mt-0.5"
             style={{ fontVariant: ["tabular-nums"] }}
           >
             {formatClock(elapsedSec)}

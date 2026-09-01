@@ -61,7 +61,7 @@ export default function SessionSummary() {
       >
         <View className="items-center">
           <View
-            className="w-[72px] h-[72px] rounded-full bg-accent items-center justify-center"
+            className="w-20 h-20 rounded-full bg-accent items-center justify-center"
             style={{
               elevation: 8,
               shadowColor: colors.accent,
@@ -72,7 +72,7 @@ export default function SessionSummary() {
           >
             <Check size={34} strokeWidth={4} color={colors["accent-ink"]} />
           </View>
-          <Text className="font-archivo-black text-3xl text-text tracking-[-0.5px] mt-5">
+          <Text className="font-archivo-black text-3xl text-text tracking-tight mt-5">
             Workout complete
           </Text>
           <Text className="font-archivo text-sm text-muted mt-1">
@@ -152,7 +152,7 @@ function StatTile({
   return (
     <View className="flex-1 bg-card border border-line rounded-3xl p-5">
       <Text
-        className="font-archivo-black text-[30px] text-text"
+        className="font-archivo-black text-3xl text-text"
         style={{ fontVariant: ["tabular-nums"], includeFontPadding: false }}
       >
         {value}

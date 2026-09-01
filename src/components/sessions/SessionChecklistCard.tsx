@@ -132,7 +132,7 @@ export function ExpandedExerciseCard({
 
   return (
     <View
-      className={`bg-card rounded-2xl p-3 ${current ? "border-[1.5px] border-accent" : "border border-line"}`}
+      className={`bg-card rounded-2xl p-3 ${current ? "border-2 border-accent" : "border border-line"}`}
     >
       <Pressable
         onPress={onCollapse}
@@ -158,7 +158,7 @@ export function ExpandedExerciseCard({
           </Text>
         </View>
         {current ? (
-          <Text className="font-archivo-bold text-xs tracking-[1px] text-accent">
+          <Text className="font-archivo-bold text-xs tracking-widest text-accent">
             CURRENT
           </Text>
         ) : (
@@ -172,16 +172,16 @@ export function ExpandedExerciseCard({
         </Text>
       ) : null}
       <View className="flex-row items-center gap-1.5 mt-2.5 px-0.5">
-        <Text className="w-9 font-archivo-bold text-[10px] tracking-[0.8px] text-muted">
+        <Text className="w-9 font-archivo-bold text-xs tracking-widest text-muted">
           SET
         </Text>
         {showLast ? (
-          <Text className="flex-1 font-archivo-bold text-[10px] tracking-[0.8px] text-muted">LAST</Text>
+          <Text className="flex-1 font-archivo-bold text-xs tracking-widest text-muted">LAST</Text>
         ) : null}
         {columns.map((c) => (
           <Text
             key={c.key}
-            className="flex-1 font-archivo-bold text-[10px] tracking-[0.8px] text-muted"
+            className="flex-1 font-archivo-bold text-xs tracking-widest text-muted"
           >
             {c.label}
           </Text>
@@ -215,8 +215,8 @@ export function ExpandedExerciseCard({
               className="flex-1 flex-row gap-1.5 active:opacity-80"
             >
               {showLast ? (
-                <View className="flex-1 h-[38px] items-center justify-center">
-                  <Text className="font-archivo-semibold text-[13px] text-muted" numberOfLines={1}>
+                <View className="flex-1 h-10 items-center justify-center">
+                  <Text className="font-archivo-semibold text-sm text-muted" numberOfLines={1}>
                     {ghostSets[i] ? describeSet(ghostSets[i], entry.measuredBy, true) : "–"}
                   </Text>
                 </View>
@@ -231,7 +231,7 @@ export function ExpandedExerciseCard({
                 return (
                   <View
                     key={c.key}
-                    className={`flex-1 h-[38px] rounded-lg bg-card2 justify-center border ${c.key === "note" ? "items-start px-3" : "items-center"} ${isNext ? "border-accent" : "border-transparent"}`}
+                    className={`flex-1 h-10 rounded-lg bg-card2 justify-center border ${c.key === "note" ? "items-start px-3" : "items-center"} ${isNext ? "border-accent" : "border-transparent"}`}
                   >
                     <Text
                       className={`${c.key === "note" ? "text-xs" : "text-sm"} ${state === "upcoming" || logged?.skipped ? "font-archivo-semibold text-muted" : "font-archivo-bold text-text"}`}
@@ -256,7 +256,7 @@ export function ExpandedExerciseCard({
                     ? `Undo skipped set ${setNumber}`
                     : `Undo set ${setNumber}`
                 }
-                className={`w-11 h-[38px] rounded-lg items-center justify-center active:opacity-80 ${logged.skipped ? "bg-card2 border border-line" : "bg-accent"}`}
+                className={`w-11 h-10 rounded-lg items-center justify-center active:opacity-80 ${logged.skipped ? "bg-card2 border border-line" : "bg-accent"}`}
               >
                 {logged.skipped ? (
                   <Text className="font-archivo-bold text-xs text-muted">
@@ -280,7 +280,7 @@ export function ExpandedExerciseCard({
                 disabled={!isNext}
                 accessibilityRole="button"
                 accessibilityLabel={`Log set ${setNumber}`}
-                className={`w-11 h-[38px] rounded-lg border-[1.5px] border-white/[0.18] ${isNext ? "active:opacity-80" : ""}`}
+                className={`w-11 h-10 rounded-lg border-2 border-white/20 ${isNext ? "active:opacity-80" : ""}`}
               />
             )}
           </View>
