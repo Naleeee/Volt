@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { syncRestEndNotification } from "@/lib/notifications";
 import { playTimerSound } from "@/lib/sounds";
 
 type SessionState = {
@@ -72,6 +73,7 @@ let restTimer: ReturnType<typeof setTimeout> | undefined;
 useSessionStore.subscribe((state, prev) => {
   if (state.restEndsAt === prev.restEndsAt) return;
   clearTimeout(restTimer);
+  syncRestEndNotification(state.restEndsAt);
   if (state.restEndsAt !== null)
     restTimer = setTimeout(
       () => void playTimerSound("rest"),
