@@ -192,7 +192,7 @@ export default function SetFocus() {
         </Pressable>
         <View className="flex-1">
           <View className="flex-row items-baseline justify-between">
-            <Text className="font-archivo-bold text-[11px] tracking-[1.5px] text-muted">
+            <Text className="font-archivo-bold text-xs tracking-widest text-muted">
               {session.routineName.toUpperCase()} · {index + 1} OF{" "}
               {entries.length}
             </Text>
@@ -335,7 +335,7 @@ function TitleBlock({
         ) : null}
         <View className="flex-1 pr-3">
           <Text
-            className={`font-archivo-black ${compact ? "text-[26px]" : "text-[28px]"} text-text tracking-[-0.5px]`}
+            className={"font-archivo-black text-3xl text-text tracking-tighter"}
             numberOfLines={1}
           >
             {entry.name}
@@ -345,10 +345,10 @@ function TitleBlock({
           </Text>
         </View>
         <View className="items-end">
-          <Text className={`font-archivo-bold text-[13px] ${type.text}`}>
+          <Text className={`font-archivo-bold text-sm ${type.text}`}>
             {done ? "ALL DONE" : `SET ${setNumber} OF ${entry.targetSets}`}
           </Text>
-          <View className="flex-row gap-[5px] mt-[7px]">
+          <View className="flex-row gap-2 mt-2">
             {Array.from({ length: entry.targetSets }, (_, i) => {
               const s = logged[i];
               const cls = s
@@ -358,12 +358,7 @@ function TitleBlock({
                 : i + 1 === setNumber
                   ? `border-[1.5px] ${type.ring}`
                   : "bg-white/[0.16]";
-              return (
-                <View
-                  key={i}
-                  className={`w-[9px] h-[9px] rounded-full ${cls}`}
-                />
-              );
+              return <View key={i} className={`w-2 h-2 rounded-full ${cls}`} />;
             })}
           </View>
         </View>
@@ -382,7 +377,7 @@ function GhostLine({
   if (!set) return null;
   return (
     <Text
-      className="font-archivo text-[13px] text-muted text-center mb-1.5"
+      className="font-archivo text-sm text-muted text-center mb-1.5"
       numberOfLines={1}
     >
       {`Last time · }`}
