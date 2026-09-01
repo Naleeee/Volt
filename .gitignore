@@ -36,3 +36,4 @@ yarn-error.*
 
 # Builds output
 android/
+ios/
