@@ -48,6 +48,7 @@
       ],
       "expo-video",
       "expo-audio",
+      "expo-notifications",
       "expo-font"
     ],
     "experiments": {
