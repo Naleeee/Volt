@@ -40,6 +40,12 @@
         }
       ],
       "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Volt attaches photos, GIFs, and short videos from your library to exercises."
+        }
+      ],
       "expo-video",
       "expo-audio",
       "expo-font"
