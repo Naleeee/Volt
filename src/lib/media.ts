@@ -46,6 +46,15 @@ export function persistMedia(tempUri: string) {
   return name;
 }
 
+export function clearMediaDir() {
+  try {
+    const dir = mediaDir();
+    if (dir.exists) dir.delete();
+  } catch (error) {
+    if (__DEV__) console.error(error);
+  }
+}
+
 // Best-effort: a leaked file must never fail a save.
 export function deleteMedia(name: string | null) {
   if (!name) return;
