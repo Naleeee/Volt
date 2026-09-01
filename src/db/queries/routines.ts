@@ -1,7 +1,7 @@
 import { asc, eq, isNull, sql } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { z } from "zod";
-import { MEASURED_BY, MeasuredBy } from "@/lib/enums";
+import { MEASURED_BY, MEDIA_TYPES, MeasuredBy } from "@/lib/enums";
 import { db } from "../client";
 import { useLiveTables } from "../live";
 import {
@@ -49,6 +49,8 @@ const entrySchema = z.object({
   exerciseId: z.number().int(),
   name: z.string(),
   measuredBy: z.enum(MEASURED_BY),
+  mediaPath: z.string().nullable(),
+  mediaType: z.enum(MEDIA_TYPES).nullable(),
   targetSets: z.number().int().min(1, "At least 1 set"),
   targetReps: z.number().int().min(1).nullable(),
   targetTimeSec: z.number().int().min(5).nullable(),
@@ -66,12 +68,14 @@ export type RoutineFormValues = z.infer<typeof routineFormSchema>;
 export const EMPTY_ROUTINE: RoutineFormValues = { name: "", entries: [] };
 
 export function defaultEntry(
-  exercise: Pick<Exercise, "id" | "name" | "measuredBy">,
+  exercise: Pick<Exercise, "id" | "name" | "measuredBy" | "mediaPath" | "mediaType">,
 ): RoutineEntry {
   return {
     exerciseId: exercise.id,
     name: exercise.name,
     measuredBy: exercise.measuredBy,
+    mediaPath: exercise.mediaPath,
+    mediaType: exercise.mediaType,
     targetSets: 3,
     targetReps: exercise.measuredBy === MeasuredBy.Reps ? 10 : null,
     targetTimeSec: exercise.measuredBy === MeasuredBy.Time ? 30 : null,
@@ -103,6 +107,8 @@ export function useRoutine(id: number): RoutineDetail | undefined {
         exerciseId: routineExercises.exerciseId,
         name: exercises.name,
         measuredBy: exercises.measuredBy,
+        mediaPath: exercises.mediaPath,
+        mediaType: exercises.mediaType,
         targetSets: routineExercises.targetSets,
         targetReps: routineExercises.targetReps,
         targetTimeSec: routineExercises.targetTimeSec,

@@ -4,6 +4,7 @@ import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TimerRing from "@/components/sessions/TimerRing";
 import Button from "@/components/UI/Button";
+import MediaThumb from "@/components/UI/MediaThumb";
 import { colors } from "@/constants/theme";
 import {
   groupSetsByEntry,
@@ -47,7 +48,8 @@ export default function RestScreen() {
     if (!session) return null;
     const done = groupSetsByEntry(session.entries, sets).map((g) => g.length);
     const position = nextPosition(session.entries, done);
-    if (!position) return "All sets done — finish when you're ready";
+    if (!position)
+      return { entry: null, label: "All sets done — finish when you're ready" };
     const entry = session.entries[position.exerciseIndex];
     const target =
       entry.measuredBy === MeasuredBy.Reps
@@ -55,7 +57,10 @@ export default function RestScreen() {
         : entry.measuredBy === MeasuredBy.Time
           ? `${entry.targetTimeSec ?? "–"} sec`
           : "free-form";
-    return `${entry.name} · Set ${position.setNumber} of ${entry.targetSets} · ${target}`;
+    return {
+      entry,
+      label: `${entry.name} · Set ${position.setNumber} of ${entry.targetSets} · ${target}`,
+    };
   })();
 
   return (
@@ -104,7 +109,11 @@ export default function RestScreen() {
         className="flex-row items-center gap-3 bg-card border border-line rounded-2xl px-3.5 py-3"
         style={{ marginBottom: insets.bottom + 28 }}
       >
-        <View className="w-11 h-11 rounded-xl bg-card2" />
+        <MediaThumb
+          path={upNext?.entry?.mediaPath ?? null}
+          type={upNext?.entry?.mediaType ?? null}
+          className="w-11 h-11 rounded-xl"
+        />
         <View className="flex-1">
           <Text className="font-archivo-bold text-sm tracking-[1.3px] text-muted">
             UP NEXT
@@ -113,7 +122,7 @@ export default function RestScreen() {
             className="font-archivo-bold text-base text-text mt-0.5"
             numberOfLines={1}
           >
-            {upNext ?? ""}
+            {upNext?.label ?? ""}
           </Text>
         </View>
       </View>

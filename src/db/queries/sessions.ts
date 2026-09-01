@@ -78,6 +78,8 @@ export type SessionEntry = {
   exerciseId: number;
   name: string;
   measuredBy: (typeof exercises.$inferSelect)["measuredBy"];
+  mediaPath: string | null;
+  mediaType: (typeof exercises.$inferSelect)["mediaType"];
   restOverrideSec: number | null;
   targetSets: number;
   targetReps: number | null;
@@ -116,6 +118,8 @@ export function useSession(sessionId: number): SessionDetail | undefined {
         exerciseId: routineExercises.exerciseId,
         name: exercises.name,
         measuredBy: exercises.measuredBy,
+        mediaPath: exercises.mediaPath,
+        mediaType: exercises.mediaType,
         restOverrideSec: exercises.restOverrideSec,
         targetSets: routineExercises.targetSets,
         targetReps: routineExercises.targetReps,

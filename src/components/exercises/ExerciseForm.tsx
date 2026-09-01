@@ -1,9 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { Controller, useForm } from "react-hook-form";
-import { View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import FieldLabel from "@/components/UI/FieldLabel";
 import FormHeader from "@/components/UI/FormHeader";
+import MediaThumb from "@/components/UI/MediaThumb";
 import { MEASURED_BY_STYLES } from "@/constants/exercises";
 import SegmentedControl from "@/components/UI/SegmentedControl";
 import VTextInput from "@/components/UI/TextInput";
@@ -12,6 +14,7 @@ import {
   type ExerciseFormValues,
 } from "@/db/queries/exercises";
 import { MeasuredBy } from "@/lib/enums";
+import { pickMedia } from "@/lib/media";
 import { toast } from "@/lib/toast";
 import Button from "../UI/Button";
 
@@ -38,11 +41,27 @@ export default function ExerciseForm({
   const {
     control,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ExerciseFormValues>({
     resolver: zodResolver(exerciseFormSchema),
     defaultValues: initial,
   });
+  const mediaPath = watch("mediaPath");
+  const mediaType = watch("mediaType");
+
+  const pick = async () => {
+    const picked = await pickMedia();
+    if (!picked) return;
+    setValue("mediaPath", picked.uri, { shouldDirty: true });
+    setValue("mediaType", picked.type, { shouldDirty: true });
+  };
+
+  const removeMedia = () => {
+    setValue("mediaPath", null, { shouldDirty: true });
+    setValue("mediaType", null, { shouldDirty: true });
+  };
 
   const submit = handleSubmit(async (values) => {
     try {
@@ -73,7 +92,51 @@ export default function ExerciseForm({
         onSave={submit}
         saving={isSubmitting}
       />
-      <View className="flex-1 px-5 pt-6 gap-[22px]">
+      <View className="flex-1 px-5 pt-6 gap-6">
+        <View>
+          <FieldLabel label="Photo / GIF" />
+          <Pressable
+            onPress={pick}
+            disabled={isSubmitting}
+            accessibilityRole="button"
+            accessibilityLabel={
+              mediaPath ? "Replace photo or GIF" : "Add photo or GIF"
+            }
+            className="active:opacity-80"
+          >
+            {mediaPath ? (
+              <MediaThumb
+                path={mediaPath}
+                type={mediaType}
+                className="h-[190px] rounded-3xl"
+              />
+            ) : (
+              <View className="h-[190px] rounded-3xl bg-card2 border-[1.5px] border-dashed border-white/[0.18] items-center justify-center px-6">
+                <Text className="font-archivo-semibold text-sm text-muted text-center">
+                  Add a photo or GIF of the movement
+                </Text>
+              </View>
+            )}
+          </Pressable>
+          <View className="flex-row items-center justify-between mt-2 px-4">
+            <Text className="font-archivo text-xs text-muted">
+              GIFs loop in the session view.
+            </Text>
+            {mediaPath ? (
+              <Pressable
+                onPress={removeMedia}
+                disabled={isSubmitting}
+                accessibilityRole="button"
+                hitSlop={8}
+                className="active:opacity-80"
+              >
+                <Text className="font-archivo-bold text-xs text-muted">
+                  Remove
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
+        </View>
         <Controller
           control={control}
           name="name"

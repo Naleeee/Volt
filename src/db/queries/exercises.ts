@@ -1,7 +1,8 @@
 import { asc, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { z } from "zod";
-import { MEASURED_BY, MeasuredBy } from "@/lib/enums";
+import { MEASURED_BY, MEDIA_TYPES, MeasuredBy } from "@/lib/enums";
+import { deleteMedia, isStoredName, persistMedia } from "@/lib/media";
 import { db } from "../client";
 import { exercises } from "../schema";
 
@@ -12,6 +13,8 @@ export const exerciseFormSchema = z.object({
     .min(1, "Name is required")
     .max(100, "Name must be at most 100 characters"),
   measuredBy: z.enum(MEASURED_BY),
+  mediaPath: z.string().nullable(),
+  mediaType: z.enum(MEDIA_TYPES).nullable(),
   notes: z.string().trim().max(500),
 });
 
@@ -20,6 +23,8 @@ export type ExerciseFormValues = z.infer<typeof exerciseFormSchema>;
 export const EMPTY_EXERCISE: ExerciseFormValues = {
   name: "",
   measuredBy: MeasuredBy.Reps,
+  mediaPath: null,
+  mediaType: null,
   notes: "",
 };
 
@@ -57,12 +62,32 @@ export function useExercise(id: number) {
 }
 
 export async function insertExercise(values: ExerciseFormValues) {
-  const [row] = await db.insert(exercises).values(toRow(values)).returning();
-  return row;
+  const row = toRow(values);
+  try {
+    const [inserted] = await db.insert(exercises).values(row).returning();
+    return inserted;
+  } catch (error) {
+    // toRow copied a fresh pick into the media dir; don't leak it on failure.
+    if (row.mediaPath !== values.mediaPath) deleteMedia(row.mediaPath);
+    throw error;
+  }
 }
 
 export async function updateExercise(id: number, values: ExerciseFormValues) {
-  await db.update(exercises).set(toRow(values)).where(eq(exercises.id, id));
+  const prev = db
+    .select({ mediaPath: exercises.mediaPath })
+    .from(exercises)
+    .where(eq(exercises.id, id))
+    .get();
+  const row = toRow(values);
+  try {
+    await db.update(exercises).set(row).where(eq(exercises.id, id));
+  } catch (error) {
+    if (row.mediaPath !== values.mediaPath) deleteMedia(row.mediaPath);
+    throw error;
+  }
+  if (prev?.mediaPath && prev.mediaPath !== row.mediaPath)
+    deleteMedia(prev.mediaPath);
 }
 
 export async function archiveExercise(id: number) {
@@ -79,8 +104,16 @@ export async function unarchiveExercise(id: number) {
     .where(eq(exercises.id, id));
 }
 
-// Empty notes are stored as NULL, not "".
 function toRow(values: ExerciseFormValues) {
   const parsed = exerciseFormSchema.parse(values);
-  return { ...parsed, notes: parsed.notes || null };
+  const mediaPath =
+    parsed.mediaPath && !isStoredName(parsed.mediaPath)
+      ? persistMedia(parsed.mediaPath)
+      : parsed.mediaPath;
+  return {
+    ...parsed,
+    mediaPath,
+    mediaType: mediaPath ? parsed.mediaType : null,
+    notes: parsed.notes || null,
+  };
 }

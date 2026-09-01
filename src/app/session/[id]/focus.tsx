@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TimerRing from "@/components/sessions/TimerRing";
 import Button from "@/components/UI/Button";
+import MediaThumb from "@/components/UI/MediaThumb";
 import { MEASURED_BY_STYLES } from "@/constants/exercises";
 import { colors } from "@/constants/theme";
 import {
@@ -315,12 +316,22 @@ function TitleBlock({
   return (
     <>
       {compact ? null : (
-        <View className="h-[150px] rounded-3xl bg-card2 mt-4" />
+        <MediaThumb
+          path={entry.mediaPath}
+          type={entry.mediaType}
+          className="h-[150px] rounded-3xl mt-4"
+        />
       )}
       <View
         className={`flex-row items-end justify-between mt-4 ${compact ? "gap-3.5" : ""}`}
       >
-        {compact ? <View className="w-14 h-14 rounded-2xl bg-card2" /> : null}
+        {compact ? (
+          <MediaThumb
+            path={entry.mediaPath}
+            type={entry.mediaType}
+            className="w-14 h-14 rounded-2xl"
+          />
+        ) : null}
         <View className="flex-1 pr-3">
           <Text
             className={`font-archivo-black ${compact ? "text-[26px]" : "text-[28px]"} text-text tracking-[-0.5px]`}

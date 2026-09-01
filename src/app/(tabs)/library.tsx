@@ -81,6 +81,8 @@ export default function Index() {
               <ExerciseCard
                 exerciseId={item.id}
                 exerciseName={item.name}
+                mediaPath={item.mediaPath}
+                mediaType={item.mediaType}
                 exerciseType={item.measuredBy}
               />
             )}
