@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { ChevronRight, Minus, Plus } from "lucide-react-native";
 import { Children, type ReactNode } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Screen from "@/components/UI/Screen";
 import Toggle from "@/components/UI/Toggle";
 import { colors } from "@/constants/theme";
 import { restSeconds, setSetting, useSettings } from "@/db/queries/settings";
@@ -18,7 +18,6 @@ type RestKey = "restBetweenSetsSec" | "restBetweenExercisesSec";
 const formatRest = (sec: number) => (sec < 120 ? `${sec} s` : formatClock(sec));
 
 export default function SettingsScreen() {
-  const insets = useSafeAreaInsets();
   const settings = useSettings();
 
   const stepRest = (key: RestKey, delta: number) => {
@@ -62,10 +61,7 @@ export default function SettingsScreen() {
     ]);
 
   return (
-    <View
-      className="flex-1 bg-bg px-4 gap-4"
-      style={{ paddingTop: insets.top }}
-    >
+    <Screen>
       <Text className="font-archivo-black text-4xl text-text">Settings</Text>
       <ScrollView
         contentContainerStyle={{ gap: 20, paddingBottom: 32 }}
@@ -100,7 +96,7 @@ export default function SettingsScreen() {
             label="Language"
             onPress={() => toast.info("English only for now")}
           >
-            <Text className="font-archivo-semibold text-[15px] text-muted">
+            <Text className="font-archivo-semibold text-base text-muted">
               English
             </Text>
             <Chevron />
@@ -130,17 +126,17 @@ export default function SettingsScreen() {
           </Row>
         </Section>
       </ScrollView>
-    </View>
+    </Screen>
   );
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <View>
-      <Text className="font-archivo-bold text-xs tracking-[1.5px] text-muted mb-2 px-1">
+      <Text className="font-archivo-bold text-xs tracking-widest text-muted mb-2 px-1">
         {title.toUpperCase()}
       </Text>
-      <View className="bg-card border border-line rounded-[20px] px-4">
+      <View className="bg-card border border-line rounded-3xl px-4">
         {Children.toArray(children).map((child, i) => (
           <View key={i} className={i > 0 ? "border-t border-line" : ""}>
             {child}
@@ -203,7 +199,7 @@ function Stepper({
         onPress={() => onStep(-REST_STEP_SEC)}
       />
       <Text
-        className="min-w-[46px] text-center font-archivo-black text-base text-text"
+        className="min-w-12 text-center font-archivo-black text-base text-text"
         style={{ fontVariant: ["tabular-nums"] }}
       >
         {value}
@@ -231,7 +227,7 @@ function StepButton({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
-      className="w-[34px] h-[34px] rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
+      className="w-9 h-9 rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
     >
       <Icon size={14} strokeWidth={2.4} color={colors.text} />
     </Pressable>

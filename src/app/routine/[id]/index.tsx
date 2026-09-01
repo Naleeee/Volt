@@ -4,6 +4,7 @@ import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import RoutineExerciseRow from "@/components/routines/RoutineExerciseRow";
 import Button from "@/components/UI/Button";
+import Screen from "@/components/UI/Screen";
 import { colors } from "@/constants/theme";
 import { useRoutine } from "@/db/queries/routines";
 import { startSession } from "@/db/queries/sessions";
@@ -48,7 +49,7 @@ export default function RoutineDetail() {
   ].join(" · ");
 
   return (
-    <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
+    <Screen>
       <FlatList
         data={routine.entries}
         keyExtractor={(entry, index) => `${entry.exerciseId}-${index}`}
@@ -60,7 +61,7 @@ export default function RoutineDetail() {
                 onPress={() => router.back()}
                 accessibilityRole="button"
                 accessibilityLabel="Back"
-                className="w-[38px] h-[38px] rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
+                className="w-10 h-10 rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
               >
                 <ChevronLeft size={20} color={colors.text} />
               </Pressable>
@@ -72,13 +73,13 @@ export default function RoutineDetail() {
                 hitSlop={8}
                 className="active:opacity-80"
               >
-                <Text className="font-archivo-bold text-[15px] text-accent">Edit</Text>
+                <Text className="font-archivo-bold text-base text-accent">Edit</Text>
               </Pressable>
             </View>
-            <Text className="font-archivo-black text-[28px] text-text mt-2 tracking-[-0.5px]">
+            <Text className="font-archivo-black text-3xl text-text mt-2 tracking-tight">
               {routine.name}
             </Text>
-            <Text className="font-archivo text-[13px] text-muted mt-1 mb-2">{subtitle}</Text>
+            <Text className="font-archivo text-sm text-muted mt-1 mb-2">{subtitle}</Text>
           </View>
         }
         renderItem={({ item }) => <RoutineExerciseRow entry={item} />}
@@ -99,6 +100,6 @@ export default function RoutineDetail() {
           onPress={start}
         />
       </View>
-    </View>
+    </Screen>
   );
 }

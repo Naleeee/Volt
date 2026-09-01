@@ -14,10 +14,10 @@ export default function Toggle({ value, onChange, accessibilityLabel }: Props) {
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ checked: value }}
       hitSlop={8}
-      className={`w-[50px] h-[30px] rounded-full justify-center ${value ? "bg-accent items-end" : "bg-white/[0.14] items-start"}`}
+      className={`w-12 h-8 rounded-full justify-center ${value ? "bg-accent items-end" : "bg-white/15 items-start"}`}
     >
       <View
-        className={`w-[26px] h-[26px] rounded-full mx-0.5 ${value ? "bg-white" : "bg-muted"}`}
+        className={`w-7 h-7 rounded-full mx-0.5 ${value ? "bg-white" : "bg-muted"}`}
       />
     </Pressable>
   );

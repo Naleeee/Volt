@@ -15,7 +15,7 @@ export default function RestBar({
       onPress={onOpen}
       accessibilityRole="button"
       accessibilityLabel="Open rest timer"
-      className="flex-row items-center justify-between h-[52px] rounded-full bg-card2 border border-line pl-5 pr-2 active:opacity-90"
+      className="flex-row items-center justify-between h-14 rounded-full bg-card2 border border-line pl-5 pr-2 active:opacity-90"
     >
       <Text className="font-archivo-bold text-sm text-text">
         Rest{" "}
@@ -26,7 +26,7 @@ export default function RestBar({
       <Pressable
         onPress={onSkip}
         accessibilityRole="button"
-        className="h-[38px] px-4 rounded-full bg-accent items-center justify-center active:opacity-80"
+        className="h-10 px-4 rounded-full bg-accent items-center justify-center active:opacity-80"
       >
         <Text className="font-archivo-bold text-sm text-accent-ink">Skip</Text>
       </Pressable>

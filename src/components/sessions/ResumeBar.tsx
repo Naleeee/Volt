@@ -11,19 +11,25 @@ type Props = {
 };
 
 export default function ResumeBar({ session, onResume, onDiscard }: Props) {
-  const pausedAtSec = Math.floor(((session.lastSetAt ?? session.startedAt) - session.startedAt) / 1000);
-  const progress = session.plannedSets > 0 ? session.loggedSets / session.plannedSets : 0;
+  const pausedAtSec = Math.floor(
+    ((session.lastSetAt ?? session.startedAt) - session.startedAt) / 1000,
+  );
+  const progress =
+    session.plannedSets > 0 ? session.loggedSets / session.plannedSets : 0;
 
   return (
-    <View className="bg-card border-[1.5px] border-accent rounded-[20px] px-4 py-3.5">
+    <View className="bg-card border-2 border-accent rounded-3xl p-4">
       <View className="flex-row items-center justify-between gap-3">
         <View className="flex-1">
-          <Text className="font-archivo-bold text-[11px] tracking-[1.5px] text-accent">
+          <Text className="font-archivo-bold text-xs tracking-widest text-accent">
             IN PROGRESS
           </Text>
-          <Text className="font-archivo-bold text-lg text-text mt-[3px]">{session.routineName}</Text>
-          <Text className="font-archivo text-[13px] text-muted mt-0.5">
-            Paused at {formatClock(pausedAtSec)} · {session.loggedSets} of {session.plannedSets} sets
+          <Text className="font-archivo-bold text-lg text-text mt-1">
+            {session.routineName}
+          </Text>
+          <Text className="font-archivo text-sm text-muted mt-1">
+            Paused at {formatClock(pausedAtSec)} · {session.loggedSets} of{" "}
+            {session.plannedSets} sets
           </Text>
         </View>
         <Button
@@ -35,11 +41,21 @@ export default function ResumeBar({ session, onResume, onDiscard }: Props) {
           accessibilityLabel={`Resume ${session.routineName}`}
         />
       </View>
-      <View className="h-[5px] rounded-[3px] bg-white/10 mt-3 overflow-hidden">
-        <View className="h-full bg-accent" style={{ width: `${Math.round(progress * 100)}%` }} />
+      <View className="h-2 rounded-md bg-white/10 mt-3 overflow-hidden">
+        <View
+          className="h-full bg-accent"
+          style={{ width: `${Math.round(progress * 100)}%` }}
+        />
       </View>
-      <Pressable onPress={onDiscard} accessibilityRole="button" hitSlop={8} className="mt-2.5 active:opacity-80">
-        <Text className="font-archivo-bold text-xs text-muted text-center">Discard session</Text>
+      <Pressable
+        onPress={onDiscard}
+        accessibilityRole="button"
+        hitSlop={8}
+        className="mt-2.5 active:opacity-80"
+      >
+        <Text className="font-archivo-bold text-xs text-muted text-center">
+          Discard session
+        </Text>
       </Pressable>
     </View>
   );

@@ -25,12 +25,12 @@ const VARIANTS: Record<
     color: colors["time-ink"],
   },
   outline: {
-    box: "border-[1.5px] border-accent rounded-full",
+    box: "border-2 border-accent rounded-full",
     text: "text-accent",
     color: colors.accent,
   },
   dashed: {
-    box: "border-[1.5px] border-dashed border-white/[0.18] rounded-2xl",
+    box: "border-2 border-dashed border-white/20 rounded-2xl",
     text: "text-muted",
     color: colors.muted,
     textSize: "text-sm",
@@ -40,7 +40,7 @@ const VARIANTS: Record<
 const SIZES: Record<Size, { box: string; text: string; icon: number }> = {
   sm: { box: "h-10 px-5 gap-2", text: "text-sm", icon: 14 },
   md: { box: "h-12 px-6 gap-2", text: "text-base", icon: 16 },
-  lg: { box: "h-14 px-6 gap-[9px]", text: "text-lg", icon: 18 },
+  lg: { box: "h-14 px-6 gap-2.5", text: "text-lg", icon: 18 },
 };
 
 type Props = {

@@ -77,7 +77,7 @@ export default function ExercisePickerModal({
               onPress={() => onPick(item)}
               className="flex-row items-center gap-3 px-5 py-3.5 border-b border-line active:bg-card"
             >
-              <Text className="flex-1 font-archivo-bold text-[15px] text-text">
+              <Text className="flex-1 font-archivo-bold text-base text-text">
                 {item.name}
               </Text>
               <TypeBadge measuredBy={item.measuredBy} />

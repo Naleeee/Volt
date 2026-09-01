@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TimerRing from "@/components/sessions/TimerRing";
 import Button from "@/components/UI/Button";
 import MediaThumb from "@/components/UI/MediaThumb";
+import Screen from "@/components/UI/Screen";
 import { MEASURED_BY_STYLES } from "@/constants/exercises";
 import { colors } from "@/constants/theme";
 import {
@@ -179,19 +180,19 @@ export default function SetFocus() {
   );
 
   return (
-    <View className="flex-1 bg-bg px-5" style={{ paddingTop: insets.top + 12 }}>
+    <Screen>
       <View className="flex-row items-center gap-3">
         <Pressable
           onPress={() => router.back()}
           accessibilityRole="button"
           accessibilityLabel="Back to list"
-          className="w-[38px] h-[38px] rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
+          className="w-10 h-10 rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
         >
           <ChevronLeft size={20} color={colors.text} />
         </Pressable>
         <View className="flex-1">
           <View className="flex-row items-baseline justify-between">
-            <Text className="font-archivo-bold text-[11px] tracking-[1.5px] text-muted">
+            <Text className="font-archivo-bold text-xs tracking-widest text-muted">
               {session.routineName.toUpperCase()} · {index + 1} OF{" "}
               {entries.length}
             </Text>
@@ -211,7 +212,7 @@ export default function SetFocus() {
                     ? "bg-accent"
                     : i === index
                       ? "bg-accent/45"
-                      : "bg-white/[0.14]"
+                      : "bg-white/15"
                 }`}
               />
             ))}
@@ -273,7 +274,7 @@ export default function SetFocus() {
           onSkip={skip}
         />
       )}
-    </View>
+    </Screen>
   );
 }
 
@@ -319,7 +320,7 @@ function TitleBlock({
         <MediaThumb
           path={entry.mediaPath}
           type={entry.mediaType}
-          className="h-[150px] rounded-3xl mt-4"
+          className="h-36 rounded-3xl mt-4"
         />
       )}
       <View
@@ -334,7 +335,7 @@ function TitleBlock({
         ) : null}
         <View className="flex-1 pr-3">
           <Text
-            className={`font-archivo-black ${compact ? "text-[26px]" : "text-[28px]"} text-text tracking-[-0.5px]`}
+            className={"font-archivo-black text-3xl text-text tracking-tighter"}
             numberOfLines={1}
           >
             {entry.name}
@@ -344,10 +345,10 @@ function TitleBlock({
           </Text>
         </View>
         <View className="items-end">
-          <Text className={`font-archivo-bold text-[13px] ${type.text}`}>
+          <Text className={`font-archivo-bold text-sm ${type.text}`}>
             {done ? "ALL DONE" : `SET ${setNumber} OF ${entry.targetSets}`}
           </Text>
-          <View className="flex-row gap-[5px] mt-[7px]">
+          <View className="flex-row gap-2 mt-2">
             {Array.from({ length: entry.targetSets }, (_, i) => {
               const s = logged[i];
               const cls = s
@@ -355,14 +356,9 @@ function TitleBlock({
                   ? "bg-white/30"
                   : type.bg
                 : i + 1 === setNumber
-                  ? `border-[1.5px] ${type.ring}`
-                  : "bg-white/[0.16]";
-              return (
-                <View
-                  key={i}
-                  className={`w-[9px] h-[9px] rounded-full ${cls}`}
-                />
-              );
+                  ? `border-2 ${type.ring}`
+                  : "bg-white/15";
+              return <View key={i} className={`w-2 h-2 rounded-full ${cls}`} />;
             })}
           </View>
         </View>
@@ -381,7 +377,7 @@ function GhostLine({
   if (!set) return null;
   return (
     <Text
-      className="font-archivo text-[13px] text-muted text-center mb-1.5"
+      className="font-archivo text-sm text-muted text-center mb-1.5"
       numberOfLines={1}
     >
       {`Last time · }`}
@@ -401,7 +397,7 @@ function LastSetLine({
 }) {
   if (!set)
     return (
-      <Text className="font-archivo text-[13px] text-muted text-center mb-3.5">
+      <Text className="font-archivo text-sm text-muted text-center mb-3.5">
         {" "}
       </Text>
     );
@@ -410,7 +406,7 @@ function LastSetLine({
   const weight =
     set.weightKg !== null ? ` @ ${formatWeight(set.weightKg)}` : "";
   return (
-    <Text className="font-archivo text-[13px] text-muted text-center mb-3.5">
+    <Text className="font-archivo text-sm text-muted text-center mb-3.5">
       Set {set.setNumber} ·{" "}
       <Text className="font-archivo-bold text-text">
         {unit === "note" ? value : `${value} ${unit}${weight}`}
@@ -446,15 +442,15 @@ function RepsFocus({
         logged={logged}
         subtitle={subtitle}
       />
-      <View className="flex-1 flex-row items-center justify-center gap-[26px]">
+      <View className="flex-1 flex-row items-center justify-center gap-7">
         <StepButton
           icon={Minus}
           label="One rep less"
           onPress={() => setRepsOverride(Math.max(0, reps - 1))}
         />
-        <View className="items-center min-w-[130px]">
+        <View className="items-center min-w-32">
           <Text
-            className="font-archivo-black text-[104px] text-text tracking-[-3px]"
+            className="font-archivo-black text-8xl text-text tracking-tight"
             style={{
               fontVariant: ["tabular-nums"],
               lineHeight: 104,
@@ -463,7 +459,7 @@ function RepsFocus({
           >
             {reps}
           </Text>
-          <Text className="font-archivo-bold text-xs tracking-[1.5px] text-muted mt-1.5">
+          <Text className="font-archivo-bold text-xs tracking-widest text-muted mt-1.5">
             REPS DONE
           </Text>
         </View>
@@ -481,9 +477,9 @@ function RepsFocus({
             label="2.5 kg less"
             onPress={() => setWeightOverride(Math.max(0, weight - 2.5))}
           />
-          <View className="min-w-[92px] items-center">
+          <View className="min-w-24 items-center">
             <Text
-              className="font-archivo-black text-[22px] text-text"
+              className="font-archivo-black text-2xl text-text"
               style={{ fontVariant: ["tabular-nums"] }}
             >
               {formatWeight(weight)}
@@ -558,7 +554,7 @@ function TimeFocus({
           color={colors.time}
         >
           <Text
-            className="font-archivo-black text-[72px] text-time tracking-[-2px]"
+            className="font-archivo-black text-7xl text-time tracking-tight"
             style={{
               fontVariant: ["tabular-nums"],
               lineHeight: 72,
@@ -567,11 +563,11 @@ function TimeFocus({
           >
             {formatClock(Math.ceil(remainingMs / 1000))}
           </Text>
-          <Text className="font-archivo-bold text-xs tracking-[2.4px] text-muted mt-2">
+          <Text className="font-archivo-bold text-xs tracking-widest text-muted mt-2">
             HOLD
           </Text>
         </TimerRing>
-        <View className="mt-[18px]">
+        <View className="mt-5">
           <GhostLine set={ghost} measuredBy={entry.measuredBy} />
           <LastSetLine set={lastLogged} unit="sec" />
         </View>
@@ -632,7 +628,7 @@ function OtherFocus({
         placeholder="e.g. 2 × 20 m @ 32 kg per hand"
         placeholderTextColor={colors.muted}
         accessibilityLabel="Set note"
-        className="bg-card2 border border-other rounded-2xl min-h-[84px] px-4 py-3.5 mt-3.5 font-archivo-semibold text-[17px] leading-[26px] text-text"
+        className="bg-card2 border border-other rounded-2xl min-h-20 px-4 py-3.5 mt-3.5 font-archivo-semibold text-lg leading-7 text-text"
         style={{ includeFontPadding: false }}
       />
       <View className="flex-row gap-2 mt-2.5">
@@ -684,7 +680,7 @@ function StepButton({
       }}
       accessibilityRole="button"
       accessibilityLabel={label}
-      className={`${small ? "w-11 h-11" : "w-[68px] h-[68px]"} rounded-full bg-card2 border border-line items-center justify-center active:scale-95 active:opacity-90`}
+      className={`${small ? "w-11 h-11" : "w-16 h-16"} rounded-full bg-card2 border border-line items-center justify-center active:scale-95 active:opacity-90`}
     >
       <Icon size={small ? 18 : 28} color={colors.text} strokeWidth={2.4} />
     </Pressable>

@@ -8,7 +8,7 @@ export default function FieldLabel({
   optional?: boolean;
 }) {
   return (
-    <Text className="font-archivo-bold text-sm tracking-[1.5px] text-muted mb-2 px-4">
+    <Text className="font-archivo-bold text-sm tracking-widest text-muted mb-2 px-4">
       {label.toUpperCase()}
       {optional ? (
         <Text className="font-archivo-semibold tracking-normal text-muted/60">

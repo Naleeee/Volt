@@ -7,7 +7,7 @@ export default function TypeBadge({ measuredBy }: { measuredBy: MeasuredBy }) {
   return (
     <View className={`self-start border rounded-sm px-1.5 py-1 ${style.box}`}>
       <Text
-        className={`font-archivo-bold text-[10px] tracking-widest ${style.text}`}
+        className={`font-archivo-bold text-xs tracking-widest ${style.text}`}
       >
         {measuredBy.toUpperCase()}
       </Text>

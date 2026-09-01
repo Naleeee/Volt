@@ -1,9 +1,9 @@
 import { router } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import { FlatList, Pressable, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TypeBadge from "@/components/exercises/TypeBadge";
 import Button from "@/components/UI/Button";
+import Screen from "@/components/UI/Screen";
 import { colors } from "@/constants/theme";
 import {
   unarchiveExercise,
@@ -11,11 +11,10 @@ import {
 } from "@/db/queries/exercises";
 
 export default function ArchivedExercises() {
-  const insets = useSafeAreaInsets();
   const archived = useArchivedExercises();
 
   return (
-    <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
+    <Screen>
       <FlatList
         data={archived}
         keyExtractor={(item) => String(item.id)}
@@ -31,7 +30,7 @@ export default function ArchivedExercises() {
               onPress={() => router.back()}
               accessibilityRole="button"
               accessibilityLabel="Back"
-              className="w-[38px] h-[38px] rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
+              className="w-10 h-10 rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
             >
               <ChevronLeft size={20} color={colors.text} />
             </Pressable>
@@ -72,6 +71,6 @@ export default function ArchivedExercises() {
           </View>
         )}
       />
-    </View>
+    </Screen>
   );
 }

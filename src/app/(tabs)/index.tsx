@@ -2,6 +2,7 @@ import RoutineCard from "@/components/routines/RoutineCard";
 import RoutinesStatsPill from "@/components/routines/RoutinesStatsPill";
 import ResumeBar from "@/components/sessions/ResumeBar";
 import Button from "@/components/UI/Button";
+import Screen from "@/components/UI/Screen";
 import { colors } from "@/constants/theme";
 import { useRoutines } from "@/db/queries/routines";
 import {
@@ -11,14 +12,11 @@ import {
   useWeekStats,
 } from "@/db/queries/sessions";
 import { useSessionStore } from "@/lib/session-store";
-import { format } from "date-fns";
 import { router } from "expo-router";
 import { Plus, Zap, Dumbbell } from "lucide-react-native";
 import { Alert, FlatList, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Index() {
-  const insets = useSafeAreaInsets();
   const routines = useRoutines();
   const active = useActiveSession();
   const stats = useWeekStats();
@@ -57,24 +55,14 @@ export default function Index() {
   };
 
   return (
-    <View
-      className="flex-1 bg-bg px-4 gap-4"
-      style={{ paddingTop: insets.top }}
-    >
-      <View className="flex flex-row items-end justify-between mt-2">
-        <View className="flex flex-col gap-2">
-          <Text className="font-archivo-bold text-xs tracking-[1.5px] text-muted uppercase mt-4">
-            {format(new Date(), "EEEE d MMM")}
-          </Text>
-          <Text className="font-archivo-black text-4xl text-text">
-            Workouts
-          </Text>
-        </View>
+    <Screen>
+      <View className="flex flex-row items-end justify-between">
+        <Text className="font-archivo-black text-4xl text-text">Workouts</Text>
         {routines.length !== 0 && (
           <View className="flex flex-row justify-center items-center gap-2 bg-card rounded-3xl p-3 py-2 border border-muted">
             <Zap color={colors.accent} size={14} fill={colors.accent} />
             <Text className="font-archivo text-md text-text">
-              {stats.streakWeeks} wk
+              {`${stats.streakWeeks} week${stats.streakWeeks > 1 ? "s" : ""}`}
             </Text>
           </View>
         )}
@@ -102,7 +90,7 @@ export default function Index() {
                   onDiscard={discard}
                 />
               ) : null}
-              <Text className="font-archivo-bold text-[11px] tracking-[1.5px] text-muted mt-2">
+              <Text className="font-archivo-bold text-xs tracking-widest text-muted mt-2">
                 MY ROUTINES
               </Text>
             </View>
@@ -149,6 +137,6 @@ export default function Index() {
           />
         </View>
       )}
-    </View>
+    </Screen>
   );
 }
