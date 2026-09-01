@@ -1,10 +1,12 @@
+import { router } from "expo-router";
 import { ChevronRight, Minus, Plus } from "lucide-react-native";
 import { Children, type ReactNode } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toggle from "@/components/UI/Toggle";
 import { colors } from "@/constants/theme";
 import { restSeconds, setSetting, useSettings } from "@/db/queries/settings";
+import { eraseAllData } from "@/lib/erase-data";
 import { exportHistory } from "@/lib/export-history";
 import { formatClock } from "@/lib/format";
 import { toast } from "@/lib/toast";
@@ -29,6 +31,35 @@ export default function SettingsScreen() {
         if (!exported) toast.info("Nothing to export yet");
       })
       .catch(() => toast.error("Export failed"));
+
+  const onErase = () =>
+    Alert.alert(
+      "Erase all data?",
+      "Every exercise, routine, session, and photo will be deleted.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Erase", style: "destructive", onPress: confirmErase },
+      ],
+    );
+
+  const confirmErase = () =>
+    Alert.alert("Erase everything?", "This can't be undone.", [
+      { text: "Keep my data", style: "cancel" },
+      {
+        text: "Erase everything",
+        style: "destructive",
+        onPress: () => {
+          try {
+            eraseAllData();
+            toast.info("All data erased");
+            router.replace("/");
+          } catch (error) {
+            if (__DEV__) console.error(error);
+            toast.error("Couldn't erase data. Try again.");
+          }
+        },
+      },
+    ]);
 
   return (
     <View
@@ -94,11 +125,7 @@ export default function SettingsScreen() {
           <Row label="Export history" onPress={onExport}>
             <Chevron />
           </Row>
-          <Row
-            label="Erase all data"
-            danger
-            onPress={() => toast.info("Coming soon")}
-          >
+          <Row label="Erase all data" danger onPress={onErase}>
             <Chevron />
           </Row>
         </Section>
