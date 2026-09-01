@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TimerRing from "@/components/sessions/TimerRing";
 import Button from "@/components/UI/Button";
 import MediaThumb from "@/components/UI/MediaThumb";
+import Screen from "@/components/UI/Screen";
 import { MEASURED_BY_STYLES } from "@/constants/exercises";
 import { colors } from "@/constants/theme";
 import {
@@ -179,7 +180,7 @@ export default function SetFocus() {
   );
 
   return (
-    <View className="flex-1 bg-bg px-5" style={{ paddingTop: insets.top + 12 }}>
+    <Screen>
       <View className="flex-row items-center gap-3">
         <Pressable
           onPress={() => router.back()}
@@ -273,7 +274,7 @@ export default function SetFocus() {
           onSkip={skip}
         />
       )}
-    </View>
+    </Screen>
   );
 }
 

@@ -4,6 +4,7 @@ import { Check } from "lucide-react-native";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "@/components/UI/Button";
+import Screen from "@/components/UI/Screen";
 import { colors } from "@/constants/theme";
 import {
   groupSetsByEntry,
@@ -50,7 +51,7 @@ export default function SessionSummary() {
   );
 
   return (
-    <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
+    <Screen>
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 20,
@@ -135,7 +136,7 @@ export default function SessionSummary() {
       <View className="px-5 pt-3" style={{ paddingBottom: insets.bottom + 16 }}>
         <Button label="Done" onPress={() => router.dismissTo("/")} />
       </View>
-    </View>
+    </Screen>
   );
 }
 

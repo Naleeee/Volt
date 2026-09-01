@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { ChevronRight, Minus, Plus } from "lucide-react-native";
 import { Children, type ReactNode } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Screen from "@/components/UI/Screen";
 import Toggle from "@/components/UI/Toggle";
 import { colors } from "@/constants/theme";
 import { restSeconds, setSetting, useSettings } from "@/db/queries/settings";
@@ -18,7 +18,6 @@ type RestKey = "restBetweenSetsSec" | "restBetweenExercisesSec";
 const formatRest = (sec: number) => (sec < 120 ? `${sec} s` : formatClock(sec));
 
 export default function SettingsScreen() {
-  const insets = useSafeAreaInsets();
   const settings = useSettings();
 
   const stepRest = (key: RestKey, delta: number) => {
@@ -62,10 +61,7 @@ export default function SettingsScreen() {
     ]);
 
   return (
-    <View
-      className="flex-1 bg-bg px-4 gap-4"
-      style={{ paddingTop: insets.top }}
-    >
+    <Screen>
       <Text className="font-archivo-black text-4xl text-text">Settings</Text>
       <ScrollView
         contentContainerStyle={{ gap: 20, paddingBottom: 32 }}
@@ -130,7 +126,7 @@ export default function SettingsScreen() {
           </Row>
         </Section>
       </ScrollView>
-    </View>
+    </Screen>
   );
 }
 

@@ -11,6 +11,7 @@ import {
   ExpandedExerciseCard,
 } from "@/components/sessions/SessionChecklistCard";
 import Button from "@/components/UI/Button";
+import Screen from "@/components/UI/Screen";
 import { colors } from "@/constants/theme";
 import {
   deleteSet,
@@ -136,7 +137,7 @@ export default function SessionChecklist() {
   };
 
   return (
-    <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
+    <Screen>
       {settings.keepAwake ? <KeepAwake /> : null}
       <View className="flex-row items-center justify-between px-5 pt-3">
         <View>
@@ -230,7 +231,7 @@ export default function SessionChecklist() {
           />
         </View>
       ) : null}
-    </View>
+    </Screen>
   );
 }
 

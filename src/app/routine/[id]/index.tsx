@@ -4,6 +4,7 @@ import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import RoutineExerciseRow from "@/components/routines/RoutineExerciseRow";
 import Button from "@/components/UI/Button";
+import Screen from "@/components/UI/Screen";
 import { colors } from "@/constants/theme";
 import { useRoutine } from "@/db/queries/routines";
 import { startSession } from "@/db/queries/sessions";
@@ -48,7 +49,7 @@ export default function RoutineDetail() {
   ].join(" · ");
 
   return (
-    <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
+    <Screen>
       <FlatList
         data={routine.entries}
         keyExtractor={(entry, index) => `${entry.exerciseId}-${index}`}
@@ -99,6 +100,6 @@ export default function RoutineDetail() {
           onPress={start}
         />
       </View>
-    </View>
+    </Screen>
   );
 }

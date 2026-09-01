@@ -6,14 +6,13 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { LayoutGrid, Plus } from "lucide-react-native";
 import { FlatList, Pressable, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useArchivedExercises, useExercises } from "@/db/queries/exercises";
 import { MEASURED_BY_FILTERS, MeasuredByFilter } from "@/constants/exercises";
 import { colors } from "@/constants/theme";
 import Button from "@/components/UI/Button";
+import Screen from "@/components/UI/Screen";
 
 export default function Index() {
-  const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<MeasuredByFilter>("all");
   const exercises = useExercises();
@@ -27,10 +26,7 @@ export default function Index() {
   );
 
   return (
-    <View
-      className="flex-1 bg-bg px-4 gap-4"
-      style={{ paddingTop: insets.top }}
-    >
+    <Screen>
       <View className="flex items-end flex-row gap-3">
         <Text className="font-archivo-black text-4xl text-text">Exercises</Text>
         <Text className="font-archivo text-md text-muted">
@@ -125,6 +121,6 @@ export default function Index() {
           ) : null}
         </View>
       )}
-    </View>
+    </Screen>
   );
 }

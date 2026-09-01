@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TimerRing from "@/components/sessions/TimerRing";
 import Button from "@/components/UI/Button";
 import MediaThumb from "@/components/UI/MediaThumb";
+import Screen from "@/components/UI/Screen";
 import { colors } from "@/constants/theme";
 import {
   groupSetsByEntry,
@@ -64,7 +65,7 @@ export default function RestScreen() {
   })();
 
   return (
-    <View className="flex-1 bg-bg px-5" style={{ paddingTop: insets.top + 10 }}>
+    <Screen>
       <Text className="font-archivo-bold text-sm tracking-[2px] text-muted text-center mt-2.5">
         {session ? `${session.routineName.toUpperCase()} · REST` : "REST"}
       </Text>
@@ -126,6 +127,6 @@ export default function RestScreen() {
           </Text>
         </View>
       </View>
-    </View>
+    </Screen>
   );
 }
