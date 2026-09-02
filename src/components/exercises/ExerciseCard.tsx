@@ -22,7 +22,8 @@ export default function ExerciseCard({
   return (
     <Pressable
       onPress={() => router.push(`/exercise/${exerciseId}`)}
-      className="flex-1 bg-bg h-44"
+      accessibilityRole="button"
+      className="flex-1 max-w-[50%] bg-bg h-44 active:opacity-80"
     >
       {mediaPath ? (
         <MediaThumb
