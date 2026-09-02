@@ -1,9 +1,10 @@
 import { format } from "date-fns";
 import { router, useLocalSearchParams } from "expo-router";
 import { Check } from "lucide-react-native";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "@/components/UI/Button";
+import LoadingScreen from "@/components/UI/LoadingScreen";
 import Screen from "@/components/UI/Screen";
 import { colors } from "@/constants/theme";
 import {
@@ -21,13 +22,7 @@ export default function SessionSummary() {
   const session = useSession(sessionId);
   const sets = useSessionSets(sessionId);
 
-  if (!session) {
-    return (
-      <View className="flex-1 bg-bg items-center justify-center">
-        <ActivityIndicator color={colors.accent} />
-      </View>
-    );
-  }
+  if (!session) return <LoadingScreen />;
 
   const endedAt = session.endedAt ?? Date.now();
   const durationSec = Math.max(

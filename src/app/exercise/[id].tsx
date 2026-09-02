@@ -1,7 +1,6 @@
 import { useLocalSearchParams } from "expo-router";
-import { ActivityIndicator, View } from "react-native";
 import ExerciseForm from "@/components/exercises/ExerciseForm";
-import { colors } from "@/constants/theme";
+import LoadingScreen from "@/components/UI/LoadingScreen";
 import {
   updateExercise,
   useExercise,
@@ -13,13 +12,7 @@ export default function EditExercise() {
   const exerciseId = Number(id);
   const exercise = useExercise(exerciseId);
 
-  if (!exercise) {
-    return (
-      <View className="flex-1 bg-bg items-center justify-center">
-        <ActivityIndicator color={colors.accent} />
-      </View>
-    );
-  }
+  if (!exercise) return <LoadingScreen />;
 
   return (
     <ExerciseForm

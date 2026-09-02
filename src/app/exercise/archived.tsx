@@ -1,10 +1,8 @@
-import { router } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { FlatList, Text, View } from "react-native";
 import TypeBadge from "@/components/exercises/TypeBadge";
+import BackButton from "@/components/UI/BackButton";
 import Button from "@/components/UI/Button";
 import Screen from "@/components/UI/Screen";
-import { colors } from "@/constants/theme";
 import {
   unarchiveExercise,
   useArchivedExercises,
@@ -26,14 +24,7 @@ export default function ArchivedExercises() {
         }}
         ListHeaderComponent={
           <View className="mb-2">
-            <Pressable
-              onPress={() => router.back()}
-              accessibilityRole="button"
-              accessibilityLabel="Back"
-              className="w-10 h-10 rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
-            >
-              <ChevronLeft size={20} color={colors.text} />
-            </Pressable>
+            <BackButton />
             <Text className="font-archivo-black text-3xl text-text mt-2 tracking-tighter">
               Archived
             </Text>
