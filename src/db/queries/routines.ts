@@ -18,6 +18,10 @@ export type RoutineSummary = {
   lastPerformedAt: number | null;
 };
 
+const lastPerformedAt = sql<
+  number | null
+>`(select max(s.ended_at) from sessions s where s.routine_id = "routines"."id")`;
+
 export function useRoutines(): RoutineSummary[] {
   return (
     useLiveTables(
@@ -30,9 +34,7 @@ export function useRoutines(): RoutineSummary[] {
               sql<number>`(select count(*) from routine_exercises re where re.routine_id = "routines"."id")`.mapWith(
                 Number,
               ),
-            lastPerformedAt: sql<
-              number | null
-            >`(select max(s.ended_at) from sessions s where s.routine_id = "routines"."id")`,
+            lastPerformedAt,
           })
           .from(routines)
           .where(isNull(routines.archivedAt))
@@ -93,9 +95,7 @@ export function useRoutine(id: number): RoutineDetail | undefined {
     db
       .select({
         name: routines.name,
-        lastPerformedAt: sql<
-          number | null
-        >`(select max(s.ended_at) from sessions s where s.routine_id = "routines"."id")`,
+        lastPerformedAt,
       })
       .from(routines)
       .where(eq(routines.id, id)),
@@ -126,7 +126,7 @@ export function useRoutine(id: number): RoutineDetail | undefined {
   return {
     name: row.name,
     lastPerformedAt: row.lastPerformedAt,
-    entries: entries.data.map((e) => ({ ...e, targetSets: e.targetSets ?? 1 })),
+    entries: entries.data,
   };
 }
 

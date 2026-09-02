@@ -136,10 +136,7 @@ export function useSession(sessionId: number): SessionDetail | undefined {
 
   const row = session.data[0];
   if (!session.updatedAt || !entries.updatedAt || !row) return undefined;
-  return {
-    ...row,
-    entries: entries.data.map((e) => ({ ...e, targetSets: e.targetSets ?? 1 })),
-  };
+  return { ...row, entries: entries.data };
 }
 
 export function useSessionSets(sessionId: number): SessionSet[] {
@@ -390,8 +387,7 @@ export function getResumePosition(sessionId: number, routineId: number) {
     .from(routineExercises)
     .where(eq(routineExercises.routineId, routineId))
     .orderBy(asc(routineExercises.position))
-    .all()
-    .map((e) => ({ ...e, targetSets: e.targetSets ?? 1 }));
+    .all();
   const sets = db
     .select({ exerciseId: sessionSets.exerciseId })
     .from(sessionSets)
