@@ -73,16 +73,16 @@ export default function ExerciseForm({
     }
   });
 
-  const archive = handleSubmit(async () => {
+  const archive = async () => {
+    if (!onArchive) return;
     try {
-      if (!onArchive) return;
       await onArchive();
       router.back();
     } catch (error) {
       if (__DEV__) console.error(error);
       toast.error("Couldn't archive the exercise. Try again.");
     }
-  });
+  };
 
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
@@ -186,17 +186,19 @@ export default function ExerciseForm({
           )}
         />
       </View>
-      <View
-        className="flex-1 px-4 flex-grow justify-end"
-        style={{ paddingBottom: insets.bottom + 16 }}
-      >
-        <Button
-          variant="secondary"
-          label="Archive exercise"
-          onPress={archive}
-          disabled={isSubmitting}
-        />
-      </View>
+      {onArchive ? (
+        <View
+          className="flex-1 px-4 flex-grow justify-end"
+          style={{ paddingBottom: insets.bottom + 16 }}
+        >
+          <Button
+            variant="secondary"
+            label="Archive exercise"
+            onPress={() => void archive()}
+            disabled={isSubmitting}
+          />
+        </View>
+      ) : null}
     </View>
   );
 }

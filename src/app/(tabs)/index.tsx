@@ -61,8 +61,8 @@ export default function Index() {
         {routines.length !== 0 && (
           <View className="flex flex-row justify-center items-center gap-2 bg-card rounded-3xl p-3 py-2 border border-muted">
             <Zap color={colors.accent} size={14} fill={colors.accent} />
-            <Text className="font-archivo text-md text-text">
-              {`${stats.streakWeeks} week${stats.streakWeeks > 1 ? "s" : ""}`}
+            <Text className="font-archivo text-base text-text">
+              {`${stats.streakWeeks} week${stats.streakWeeks === 1 ? "" : "s"}`}
             </Text>
           </View>
         )}
@@ -132,7 +132,7 @@ export default function Index() {
           />
           <Button
             variant="outline"
-            label="Browse exercices"
+            label="Browse exercises"
             onPress={() => router.push("/library")}
           />
         </View>

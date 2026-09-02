@@ -29,7 +29,7 @@ export default function Index() {
     <Screen>
       <View className="flex items-end flex-row gap-3">
         <Text className="font-archivo-black text-4xl text-text">Exercises</Text>
-        <Text className="font-archivo text-md text-muted">
+        <Text className="font-archivo text-base text-muted">
           {visible.length}
         </Text>
       </View>
@@ -49,7 +49,7 @@ export default function Index() {
           </View>
           <FlatList
             data={visible}
-            keyExtractor={(item) => item.name}
+            keyExtractor={(item) => String(item.id)}
             numColumns={2}
             columnWrapperStyle={{ gap: 16 }}
             contentContainerStyle={{ paddingBottom: 96, gap: 16 }}

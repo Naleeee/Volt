@@ -102,6 +102,11 @@ export default function RoutineForm({ title, initial, onSave }: Props) {
                 EXERCISES · {fields.length}
               </Text>
             </View>
+            {entriesError ? (
+              <Text className="font-archivo text-xs text-danger px-4">
+                {entriesError}
+              </Text>
+            ) : null}
           </View>
         }
         renderItem={({

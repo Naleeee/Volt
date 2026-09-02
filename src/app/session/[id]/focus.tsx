@@ -380,7 +380,7 @@ function GhostLine({
       className="font-archivo text-sm text-muted text-center mb-1.5"
       numberOfLines={1}
     >
-      {`Last time · }`}
+      {"Last time · "}
       <Text className="font-archivo-bold text-text">
         {describeSet(set, measuredBy)}
       </Text>
