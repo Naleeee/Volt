@@ -15,6 +15,7 @@ import {
 } from "@/db/queries/sessions";
 import { MeasuredBy } from "@/lib/enums";
 import { formatClock } from "@/lib/format";
+import { restRemainingSec } from "@/lib/session-flow";
 import { useSessionStore } from "@/lib/session-store";
 import { useNow } from "@/lib/use-now";
 
@@ -28,9 +29,7 @@ export default function RestScreen() {
   const { restEndsAt, restDurationSec, extendRest, clearRest } =
     useSessionStore();
 
-  const remainingSec = restEndsAt
-    ? Math.min(restDurationSec, Math.ceil((restEndsAt - now) / 1000))
-    : 0;
+  const remainingSec = restRemainingSec(restEndsAt, restDurationSec, now);
   const over = restEndsAt === null || remainingSec <= 0;
 
   useEffect(() => {

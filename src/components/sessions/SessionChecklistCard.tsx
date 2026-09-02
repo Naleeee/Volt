@@ -5,21 +5,8 @@ import { colors } from "@/constants/theme";
 import type { SessionEntry } from "@/db/queries/sessions";
 import type { SessionSet } from "@/db/schema";
 import { MeasuredBy } from "@/lib/enums";
+import { describeEntry } from "@/lib/describe-entry";
 import { describeSet } from "@/lib/describe-set";
-import { formatWeight } from "@/lib/format";
-
-// "4 × 8 · 60 kg" / "3 × 45 sec" / "3 sets"
-export function describeEntry(entry: SessionEntry) {
-  const weight =
-    entry.targetWeightKg !== null
-      ? ` · ${formatWeight(entry.targetWeightKg)}`
-      : "";
-  if (entry.measuredBy === MeasuredBy.Reps)
-    return `${entry.targetSets} × ${entry.targetReps ?? "–"}${weight}`;
-  if (entry.measuredBy === MeasuredBy.Time)
-    return `${entry.targetSets} × ${entry.targetTimeSec ?? "–"} sec${weight}`;
-  return `${entry.targetSets} ${entry.targetSets === 1 ? "set" : "sets"}`;
-}
 
 type CollapsedProps = {
   entry: SessionEntry;
