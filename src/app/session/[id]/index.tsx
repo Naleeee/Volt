@@ -1,24 +1,21 @@
 import { useNavigation, usePreventRemove } from "@react-navigation/native";
-import * as Haptics from "expo-haptics";
 import { useKeepAwake } from "expo-keep-awake";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Alert, FlatList, Text, View } from "react-native";
 import RestBar from "@/components/sessions/RestBar";
 import {
   CollapsedExerciseCard,
   ExpandedExerciseCard,
 } from "@/components/sessions/SessionChecklistCard";
+import BottomBar from "@/components/UI/BottomBar";
 import Button from "@/components/UI/Button";
+import LoadingScreen from "@/components/UI/LoadingScreen";
 import Screen from "@/components/UI/Screen";
-import { colors } from "@/constants/theme";
 import {
   deleteSet,
-  finishSession,
   groupSetsByEntry,
   useGhostSets,
-  logSet,
   nextPosition,
   useSession,
   useSessionSets,
@@ -26,11 +23,15 @@ import {
 import { useSettings } from "@/db/queries/settings";
 import { formatClock } from "@/lib/format";
 import { restDurationFor } from "@/lib/rest";
+import {
+  finishWorkout,
+  logSetAndAdvance,
+  restRemainingSec,
+} from "@/lib/session-flow";
 import { useSessionStore } from "@/lib/session-store";
 import { useNow } from "@/lib/use-now";
 
 export default function SessionChecklist() {
-  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const sessionId = Number(id);
   const session = useSession(sessionId);
@@ -41,14 +42,8 @@ export default function SessionChecklist() {
   );
   const settings = useSettings();
   const now = useNow();
-  const {
-    restEndsAt,
-    restDurationSec,
-    startRest,
-    clearRest,
-    setPosition,
-    end,
-  } = useSessionStore();
+  const { restEndsAt, restDurationSec, clearRest, setPosition } =
+    useSessionStore();
   const [reopenedIndex, setReopenedIndex] = useState<number | null>(null);
   const navigation = useNavigation();
 
@@ -71,43 +66,24 @@ export default function SessionChecklist() {
     );
   });
 
-  if (!session) {
-    return (
-      <View className="flex-1 bg-bg items-center justify-center">
-        <ActivityIndicator color={colors.accent} />
-      </View>
-    );
-  }
+  if (!session) return <LoadingScreen />;
 
   const grouped = groupSetsByEntry(session.entries, sets);
   const ghostByEntry = groupSetsByEntry(session.entries, ghosts);
   const done = grouped.map((g) => g.length);
   const position = nextPosition(session.entries, done);
   const elapsedSec = Math.max(0, Math.floor((now - session.startedAt) / 1000));
-  const restRemainingSec = restEndsAt
-    ? Math.min(restDurationSec, Math.ceil((restEndsAt - now) / 1000))
-    : 0;
-  const resting = restRemainingSec > 0;
+  const restRemaining = restRemainingSec(restEndsAt, restDurationSec, now);
+  const resting = restRemaining > 0;
 
   const logCurrentSet = (setNumber: number) => {
     if (!position) return;
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const entry = session.entries[position.exerciseIndex];
-    logSet({
-      sessionId,
-      exerciseId: entry.exerciseId,
-      setNumber,
+    logSetAndAdvance(session, position.exerciseIndex, setNumber, settings, {
       reps: entry.targetReps,
       timeSec: entry.targetTimeSec,
       weightKg: entry.targetWeightKg,
     });
-    const lastSetOfExercise = setNumber >= entry.targetSets;
-    const lastExercise = position.exerciseIndex === session.entries.length - 1;
-    if (lastSetOfExercise) setPosition(position.exerciseIndex + 1, 1);
-    else setPosition(position.exerciseIndex, setNumber + 1);
-    if (settings.autostartRestTimer && !(lastSetOfExercise && lastExercise)) {
-      startRest(restDurationFor(entry, settings, lastSetOfExercise));
-    }
   };
 
   // Only the last logged set of the current exercise can be undone, so set numbers stay contiguous.
@@ -116,25 +92,7 @@ export default function SessionChecklist() {
     clearRest();
   };
 
-  const finish = () => {
-    const complete = () => {
-      finishSession(sessionId);
-      end();
-      router.dismissTo("/");
-      router.push({ pathname: "/session/[id]/summary", params: { id } });
-    };
-    if (!position) return complete();
-    const remaining =
-      session.entries.reduce((n, e) => n + e.targetSets, 0) - sets.length;
-    Alert.alert(
-      "Finish early?",
-      `${remaining} planned ${remaining === 1 ? "set is" : "sets are"} still open.`,
-      [
-        { text: "Keep going", style: "cancel" },
-        { text: "Finish", style: "destructive", onPress: complete },
-      ],
-    );
-  };
+  const finish = () => finishWorkout(sessionId, session.entries, sets.length);
 
   return (
     <Screen>
@@ -163,7 +121,12 @@ export default function SessionChecklist() {
           gap: 8,
         }}
         renderItem={({ item, index }) => {
-          if (position?.exerciseIndex === index) {
+          if (position && position.exerciseIndex === index) {
+            const restSec = restDurationFor(
+              item,
+              settings,
+              position.setNumber >= item.targetSets,
+            );
             return (
               <ExpandedExerciseCard
                 entry={item}
@@ -172,7 +135,7 @@ export default function SessionChecklist() {
                 current
                 restHint={
                   settings.autostartRestTimer
-                    ? `Tap the box to log a set · rest ${settings.restBetweenSetsSec} s auto-starts`
+                    ? `Tap the box to log a set · rest ${restSec} s auto-starts`
                     : "Tap the box to log a set"
                 }
                 onLogSet={logCurrentSet}
@@ -218,18 +181,15 @@ export default function SessionChecklist() {
         }
       />
       {resting ? (
-        <View
-          className="absolute left-0 right-0 bottom-0 px-5 pt-3.5 bg-bg"
-          style={{ paddingBottom: insets.bottom + 16 }}
-        >
+        <BottomBar>
           <RestBar
-            remainingSec={restRemainingSec}
+            remainingSec={restRemaining}
             onSkip={clearRest}
             onOpen={() =>
               router.push({ pathname: "/session/[id]/rest", params: { id } })
             }
           />
-        </View>
+        </BottomBar>
       ) : null}
     </Screen>
   );

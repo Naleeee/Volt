@@ -2,6 +2,7 @@ import RoutineCard from "@/components/routines/RoutineCard";
 import RoutinesStatsPill from "@/components/routines/RoutinesStatsPill";
 import ResumeBar from "@/components/sessions/ResumeBar";
 import Button from "@/components/UI/Button";
+import EmptyState from "@/components/UI/EmptyState";
 import Screen from "@/components/UI/Screen";
 import { colors } from "@/constants/theme";
 import { useRoutines } from "@/db/queries/routines";
@@ -11,6 +12,7 @@ import {
   useActiveSession,
   useWeekStats,
 } from "@/db/queries/sessions";
+import { startWorkout } from "@/lib/session-flow";
 import { useSessionStore } from "@/lib/session-store";
 import { router } from "expo-router";
 import { Plus, Zap, Dumbbell } from "lucide-react-native";
@@ -110,21 +112,16 @@ export default function Index() {
               lastPerformedAt={item.lastPerformedAt}
               inProgress={active?.routineId === item.id}
               onPress={() => openRoutine(item.id)}
-              onStart={() => openRoutine(item.id)}
+              onStart={() => startWorkout(item.id)}
             />
           )}
         />
       ) : (
-        <View className="flex-1 justify-center items-center gap-4">
-          <View className="w-24 h-24 rounded-full bg-card border border-muted/30 justify-center items-center">
-            <Dumbbell color={colors.accent} size={32} />
-          </View>
-          <Text className="font-archivo-bold text-lg text-text">
-            No routines yet
-          </Text>
-          <Text className="font-archivo text-sm text-muted text-center w-2/3 self-center">
-            Create a routine to start tracking your workouts and progress.
-          </Text>
+        <EmptyState
+          icon={Dumbbell}
+          title="No routines yet"
+          description="Create a routine to start tracking your workouts and progress."
+        >
           <Button
             variant="primary"
             label="New routine"
@@ -135,7 +132,7 @@ export default function Index() {
             label="Browse exercises"
             onPress={() => router.push("/library")}
           />
-        </View>
+        </EmptyState>
       )}
     </Screen>
   );
