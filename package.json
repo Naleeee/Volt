@@ -4,7 +4,6 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
@@ -53,7 +52,6 @@
     "react-native-svg": "15.12.1",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.5.1",
-    "tailwindcss": "^3.4.19",
     "zod": "^3.25.76",
     "zustand": "^5.0.15"
   },
@@ -67,7 +65,7 @@
     "eslint-config-expo": "~10.0.0",
     "expo-drizzle-studio-plugin": "^0.2.1",
     "postcss": "^8.5.26",
-    "tailwindcss": "3",
+    "tailwindcss": "^3.4.19",
     "typescript": "~5.9.2"
   },
   "private": true

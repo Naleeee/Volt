@@ -28,7 +28,7 @@ export const routineExercises = sqliteTable("routine_exercises", {
     .notNull()
     .references(() => exercises.id),
   position: integer("position").notNull(),
-  targetSets: integer("target_sets"),
+  targetSets: integer("target_sets").notNull().default(1),
   targetReps: integer("target_reps"),
   targetTimeSec: integer("target_time_sec"),
   targetWeightKg: real("target_weight_kg"),

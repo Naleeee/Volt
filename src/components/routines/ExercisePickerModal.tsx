@@ -7,6 +7,7 @@ import { useExercises } from "@/db/queries/exercises";
 import type { Exercise } from "@/db/schema";
 import FilterChips from "../UI/FilterChips";
 import { MEASURED_BY_FILTERS, MeasuredByFilter } from "@/constants/exercises";
+import { filterExercises } from "@/lib/filter-exercises";
 
 type Props = {
   visible: boolean;
@@ -24,12 +25,7 @@ export default function ExercisePickerModal({
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<MeasuredByFilter>("all");
 
-  const needle = query.trim().toLowerCase();
-  const visibleExercises = exercises.filter(
-    (e) =>
-      (filter === "all" || e.measuredBy === filter) &&
-      e.name.toLowerCase().includes(needle),
-  );
+  const visibleExercises = filterExercises(exercises, query, filter);
 
   return (
     <Modal

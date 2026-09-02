@@ -28,6 +28,7 @@ export function useLiveTables<T>(
       disposed = true;
       listener.remove();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `run` is deliberately re-captured only when key/deps change
   }, [key, ...deps]);
 
   return data;

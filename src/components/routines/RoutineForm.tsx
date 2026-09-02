@@ -9,6 +9,7 @@ import DraggableFlatList, {
   type RenderItemParams,
 } from "react-native-draggable-flatlist";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BottomBar from "@/components/UI/BottomBar";
 import Button from "@/components/UI/Button";
 import FormHeader from "@/components/UI/FormHeader";
 import VTextInput from "@/components/UI/TextInput";
@@ -102,6 +103,11 @@ export default function RoutineForm({ title, initial, onSave }: Props) {
                 EXERCISES · {fields.length}
               </Text>
             </View>
+            {entriesError ? (
+              <Text className="font-archivo text-xs text-danger px-4">
+                {entriesError}
+              </Text>
+            ) : null}
           </View>
         }
         renderItem={({
@@ -125,10 +131,7 @@ export default function RoutineForm({ title, initial, onSave }: Props) {
           );
         }}
       />
-      <View
-        className="absolute left-0 right-0 bottom-0 px-5 pt-4 bg-bg"
-        style={{ paddingBottom: insets.bottom + 16 }}
-      >
+      <BottomBar>
         <View className="flex-row items-center justify-center gap-4 mb-4">
           <Button
             variant="outline"
@@ -145,7 +148,7 @@ export default function RoutineForm({ title, initial, onSave }: Props) {
             className="flex-grow"
           />
         </View>
-      </View>
+      </BottomBar>
       <ExercisePickerModal
         visible={pickerOpen}
         onClose={() => setPickerOpen(false)}

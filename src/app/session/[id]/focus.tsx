@@ -1,26 +1,19 @@
-import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronLeft, Minus, Pause, Play, Plus } from "lucide-react-native";
-import { useEffect, useState, type ReactNode } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Minus, Pause, Play, Plus } from "lucide-react-native";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Pressable, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TimerRing from "@/components/sessions/TimerRing";
+import BackButton from "@/components/UI/BackButton";
 import Button from "@/components/UI/Button";
+import LoadingScreen from "@/components/UI/LoadingScreen";
 import MediaThumb from "@/components/UI/MediaThumb";
 import Screen from "@/components/UI/Screen";
+import StepButton from "@/components/UI/StepButton";
 import { MEASURED_BY_STYLES } from "@/constants/exercises";
 import { colors } from "@/constants/theme";
 import {
-  finishSession,
   groupSetsByEntry,
-  logSet,
   useGhostSets,
   useLastPerformedSet,
   useSession,
@@ -32,7 +25,7 @@ import { useSettings } from "@/db/queries/settings";
 import { MeasuredBy } from "@/lib/enums";
 import { describeSet } from "@/lib/describe-set";
 import { formatClock, formatWeight } from "@/lib/format";
-import { restDurationFor } from "@/lib/rest";
+import { finishWorkout, logSetAndAdvance } from "@/lib/session-flow";
 import { useSessionStore } from "@/lib/session-store";
 import { playTimerSound } from "@/lib/sounds";
 import { useNow } from "@/lib/use-now";
@@ -49,16 +42,9 @@ export default function SetFocus() {
   );
   const settings = useSettings();
   const now = useNow();
-  const { exerciseIndex, setPosition, startRest, resetHold, end } =
-    useSessionStore();
+  const { exerciseIndex } = useSessionStore();
 
-  if (!session) {
-    return (
-      <View className="flex-1 bg-bg items-center justify-center">
-        <ActivityIndicator color={colors.accent} />
-      </View>
-    );
-  }
+  if (!session) return <LoadingScreen />;
 
   const { entries } = session;
   const index = Math.min(Math.max(exerciseIndex, 0), entries.length - 1);
@@ -81,11 +67,6 @@ export default function SetFocus() {
   const exerciseDone = setNumber > entry.targetSets;
   const elapsedSec = Math.max(0, Math.floor((now - session.startedAt) / 1000));
 
-  const advance = (lastOfExercise: boolean) => {
-    if (lastOfExercise) setPosition(Math.min(index + 1, entries.length - 1), 1);
-    else setPosition(index, setNumber + 1);
-  };
-
   // Writes the set, moves the pointer, starts rest, returns to the checklist.
   const complete = (values: {
     reps?: number | null;
@@ -93,54 +74,30 @@ export default function SetFocus() {
     weightKg?: number | null;
     note?: string | null;
   }) => {
-    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    logSet({ sessionId, exerciseId: entry.exerciseId, setNumber, ...values });
-    const last = setNumber >= entry.targetSets;
-    resetHold();
-    advance(last);
-    if (
-      settings.autostartRestTimer &&
-      !(last && index === entries.length - 1)
-    ) {
-      startRest(restDurationFor(entry, settings, last));
+    const { restStarted } = logSetAndAdvance(
+      session,
+      index,
+      setNumber,
+      settings,
+      values,
+    );
+    if (restStarted)
       router.replace({ pathname: "/session/[id]/rest", params: { id } });
-    } else {
-      router.back();
-    }
+    else router.back();
   };
 
   const skip = () => {
-    logSet({
-      sessionId,
-      exerciseId: entry.exerciseId,
+    const { lastOfExercise } = logSetAndAdvance(
+      session,
+      index,
       setNumber,
-      skipped: true,
-    });
-    const last = setNumber >= entry.targetSets;
-    resetHold();
-    advance(last);
-    if (last) router.back();
+      settings,
+      { skipped: true },
+    );
+    if (lastOfExercise) router.back();
   };
 
-  const finish = () => {
-    const done = () => {
-      finishSession(sessionId);
-      end();
-      router.dismissTo("/");
-      router.push({ pathname: "/session/[id]/summary", params: { id } });
-    };
-    const remaining =
-      entries.reduce((n, e) => n + e.targetSets, 0) - sets.length;
-    if (remaining <= 0) return done();
-    Alert.alert(
-      "Finish early?",
-      `${remaining} planned ${remaining === 1 ? "set is" : "sets are"} still open.`,
-      [
-        { text: "Keep going", style: "cancel" },
-        { text: "Finish", style: "destructive", onPress: done },
-      ],
-    );
-  };
+  const finish = () => finishWorkout(sessionId, entries, sets.length);
 
   const footer = (
     primary: ReactNode,
@@ -182,14 +139,7 @@ export default function SetFocus() {
   return (
     <Screen>
       <View className="flex-row items-center gap-3">
-        <Pressable
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel="Back to list"
-          className="w-10 h-10 rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
-        >
-          <ChevronLeft size={20} color={colors.text} />
-        </Pressable>
+        <BackButton label="Back to list" />
         <View className="flex-1">
           <View className="flex-row items-baseline justify-between">
             <Text className="font-archivo-bold text-xs tracking-widest text-muted">
@@ -380,7 +330,7 @@ function GhostLine({
       className="font-archivo text-sm text-muted text-center mb-1.5"
       numberOfLines={1}
     >
-      {`Last time · }`}
+      {"Last time · "}
       <Text className="font-archivo-bold text-text">
         {describeSet(set, measuredBy)}
       </Text>
@@ -445,6 +395,7 @@ function RepsFocus({
       <View className="flex-1 flex-row items-center justify-center gap-7">
         <StepButton
           icon={Minus}
+          size="lg"
           label="One rep less"
           onPress={() => setRepsOverride(Math.max(0, reps - 1))}
         />
@@ -465,6 +416,7 @@ function RepsFocus({
         </View>
         <StepButton
           icon={Plus}
+          size="lg"
           label="One rep more"
           onPress={() => setRepsOverride(reps + 1)}
         />
@@ -472,7 +424,6 @@ function RepsFocus({
       {hasWeight ? (
         <View className="flex-row items-center justify-center gap-3 mb-3.5">
           <StepButton
-            small
             icon={Minus}
             label="2.5 kg less"
             onPress={() => setWeightOverride(Math.max(0, weight - 2.5))}
@@ -486,7 +437,6 @@ function RepsFocus({
             </Text>
           </View>
           <StepButton
-            small
             icon={Plus}
             label="2.5 kg more"
             onPress={() => setWeightOverride(weight + 2.5)}
@@ -530,8 +480,15 @@ function TimeFocus({
   const lastLogged = [...logged].reverse().find((s) => !s.skipped);
 
   // The countdown crossing zero is a clock event, not a tap — log the target once it happens.
+  // The ref guards against the effect re-running before the store update lands.
+  const completedRef = useRef(false);
   useEffect(() => {
-    if (!reachedTarget) return;
+    if (!reachedTarget) {
+      completedRef.current = false;
+      return;
+    }
+    if (completedRef.current) return;
+    completedRef.current = true;
     void playTimerSound("time");
     onComplete({ timeSec: targetSec, weightKg: entry.targetWeightKg });
   }, [reachedTarget, onComplete, targetSec, entry.targetWeightKg]);
@@ -658,31 +615,5 @@ function OtherFocus({
         onSkip,
       )}
     </>
-  );
-}
-
-function StepButton({
-  icon: Icon,
-  label,
-  onPress,
-  small = false,
-}: {
-  icon: typeof Minus;
-  label: string;
-  onPress: () => void;
-  small?: boolean;
-}) {
-  return (
-    <Pressable
-      onPress={() => {
-        void Haptics.selectionAsync();
-        onPress();
-      }}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      className={`${small ? "w-11 h-11" : "w-16 h-16"} rounded-full bg-card2 border border-line items-center justify-center active:scale-95 active:opacity-90`}
-    >
-      <Icon size={small ? 18 : 28} color={colors.text} strokeWidth={2.4} />
-    </Pressable>
   );
 }

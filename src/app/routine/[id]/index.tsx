@@ -1,45 +1,25 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronLeft, Play } from "lucide-react-native";
-import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Play } from "lucide-react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import RoutineExerciseRow from "@/components/routines/RoutineExerciseRow";
+import BackButton from "@/components/UI/BackButton";
+import BottomBar from "@/components/UI/BottomBar";
 import Button from "@/components/UI/Button";
+import LoadingScreen from "@/components/UI/LoadingScreen";
 import Screen from "@/components/UI/Screen";
-import { colors } from "@/constants/theme";
 import { useRoutine } from "@/db/queries/routines";
-import { startSession } from "@/db/queries/sessions";
 import { useSettings } from "@/db/queries/settings";
 import { estimateRoutineSeconds } from "@/lib/estimate";
 import { formatEstimatedDuration, formatLastPerformedLine } from "@/lib/format";
-import { useSessionStore } from "@/lib/session-store";
-import { toast } from "@/lib/toast";
+import { startWorkout } from "@/lib/session-flow";
 
 export default function RoutineDetail() {
-  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const routineId = Number(id);
   const routine = useRoutine(routineId);
   const settings = useSettings();
-  const begin = useSessionStore((s) => s.begin);
 
-  if (!routine) {
-    return (
-      <View className="flex-1 bg-bg items-center justify-center">
-        <ActivityIndicator color={colors.accent} />
-      </View>
-    );
-  }
-
-  const start = () => {
-    try {
-      const session = startSession(routineId);
-      begin(session.id);
-      router.push({ pathname: "/session/[id]", params: { id: String(session.id) } });
-    } catch (error) {
-      if (__DEV__) console.error(error);
-      toast.error("Finish or discard your current workout first.");
-    }
-  };
+  if (!routine) return <LoadingScreen />;
 
   const count = routine.entries.length;
   const subtitle = [
@@ -57,14 +37,7 @@ export default function RoutineDetail() {
         ListHeaderComponent={
           <View className="mb-1">
             <View className="flex-row items-center justify-between">
-              <Pressable
-                onPress={() => router.back()}
-                accessibilityRole="button"
-                accessibilityLabel="Back"
-                className="w-10 h-10 rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
-              >
-                <ChevronLeft size={20} color={colors.text} />
-              </Pressable>
+              <BackButton />
               <Pressable
                 onPress={() =>
                   router.push({ pathname: "/routine/[id]/edit", params: { id } })
@@ -89,17 +62,14 @@ export default function RoutineDetail() {
           </Text>
         }
       />
-      <View
-        className="absolute left-0 right-0 bottom-0 px-5 pt-4 bg-bg"
-        style={{ paddingBottom: insets.bottom + 16 }}
-      >
+      <BottomBar>
         <Button
           label="Start workout"
           icon={Play}
           iconFill
-          onPress={start}
+          onPress={() => startWorkout(routineId)}
         />
-      </View>
+      </BottomBar>
     </Screen>
   );
 }

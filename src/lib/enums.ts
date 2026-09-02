@@ -8,6 +8,7 @@ export const MeasuredBy = {
   Time: "time",
   Other: "other",
 } as const;
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- companion type for the const
 export type MeasuredBy = (typeof MeasuredBy)[keyof typeof MeasuredBy];
 export const MEASURED_BY = values(MeasuredBy);
 
@@ -16,5 +17,6 @@ export const MediaType = {
   Gif: "gif",
   Video: "video",
 } as const;
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- companion type for the const
 export type MediaType = (typeof MediaType)[keyof typeof MediaType];
 export const MEDIA_TYPES = values(MediaType);

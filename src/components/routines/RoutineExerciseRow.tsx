@@ -2,8 +2,7 @@ import { Text, View } from "react-native";
 import MediaThumb from "@/components/UI/MediaThumb";
 import { MEASURED_BY_STYLES } from "@/constants/exercises";
 import type { RoutineEntry } from "@/db/queries/routines";
-import { MeasuredBy } from "@/lib/enums";
-import { formatWeight } from "@/lib/format";
+import { describeTargets } from "@/lib/describe-entry";
 
 export default function RoutineExerciseRow({ entry }: { entry: RoutineEntry }) {
   const { head, tail } = describeTargets(entry);
@@ -25,17 +24,4 @@ export default function RoutineExerciseRow({ entry }: { entry: RoutineEntry }) {
       </View>
     </View>
   );
-}
-
-// "4 × 8" + "reps · 60 kg" · "3 × 45" + "sec" · "3" + "sets"
-function describeTargets(entry: RoutineEntry) {
-  const weight = entry.targetWeightKg !== null ? ` · ${formatWeight(entry.targetWeightKg)}` : "";
-  switch (entry.measuredBy) {
-    case MeasuredBy.Reps:
-      return { head: `${entry.targetSets} × ${entry.targetReps ?? "–"}`, tail: `reps${weight}` };
-    case MeasuredBy.Time:
-      return { head: `${entry.targetSets} × ${entry.targetTimeSec ?? "–"}`, tail: `sec${weight}` };
-    default:
-      return { head: String(entry.targetSets), tail: entry.targetSets === 1 ? "set" : "sets" };
-  }
 }

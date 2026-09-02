@@ -8,8 +8,9 @@ import { LayoutGrid, Plus } from "lucide-react-native";
 import { FlatList, Pressable, Text, View } from "react-native";
 import { useArchivedExercises, useExercises } from "@/db/queries/exercises";
 import { MEASURED_BY_FILTERS, MeasuredByFilter } from "@/constants/exercises";
-import { colors } from "@/constants/theme";
+import { filterExercises } from "@/lib/filter-exercises";
 import Button from "@/components/UI/Button";
+import EmptyState from "@/components/UI/EmptyState";
 import Screen from "@/components/UI/Screen";
 
 export default function Index() {
@@ -18,18 +19,13 @@ export default function Index() {
   const exercises = useExercises();
   const archived = useArchivedExercises();
 
-  const needle = query.trim().toLowerCase();
-  const visible = exercises.filter(
-    (e) =>
-      (filter === "all" || e.measuredBy === filter) &&
-      e.name.toLowerCase().includes(needle),
-  );
+  const visible = filterExercises(exercises, query, filter);
 
   return (
     <Screen>
       <View className="flex items-end flex-row gap-3">
         <Text className="font-archivo-black text-4xl text-text">Exercises</Text>
-        <Text className="font-archivo text-md text-muted">
+        <Text className="font-archivo text-base text-muted">
           {visible.length}
         </Text>
       </View>
@@ -49,7 +45,7 @@ export default function Index() {
           </View>
           <FlatList
             data={visible}
-            keyExtractor={(item) => item.name}
+            keyExtractor={(item) => String(item.id)}
             numColumns={2}
             columnWrapperStyle={{ gap: 16 }}
             contentContainerStyle={{ paddingBottom: 96, gap: 16 }}
@@ -91,17 +87,11 @@ export default function Index() {
           />
         </>
       ) : (
-        <View className="flex-1 justify-center items-center gap-4">
-          <View className="w-24 h-24 rounded-full bg-card border border-muted/30 justify-center items-center">
-            <LayoutGrid color={colors.accent} size={32} />
-          </View>
-          <Text className="font-archivo-bold text-lg text-text">
-            No exercises yet
-          </Text>
-          <Text className="font-archivo text-sm text-muted text-center w-2/3 self-center">
-            Add each exercise once, with a photo or GIF of the movement, then
-            reuse it across every routine.
-          </Text>
+        <EmptyState
+          icon={LayoutGrid}
+          title="No exercises yet"
+          description="Add each exercise once, with a photo or GIF of the movement, then reuse it across every routine."
+        >
           <Button
             variant="primary"
             label="New exercise"
@@ -119,7 +109,7 @@ export default function Index() {
               </Text>
             </Pressable>
           ) : null}
-        </View>
+        </EmptyState>
       )}
     </Screen>
   );

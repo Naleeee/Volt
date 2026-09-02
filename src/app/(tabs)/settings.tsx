@@ -3,6 +3,7 @@ import { ChevronRight, Minus, Plus } from "lucide-react-native";
 import { Children, type ReactNode } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import Screen from "@/components/UI/Screen";
+import StepButton from "@/components/UI/StepButton";
 import Toggle from "@/components/UI/Toggle";
 import { colors } from "@/constants/theme";
 import { restSeconds, setSetting, useSettings } from "@/db/queries/settings";
@@ -195,6 +196,7 @@ function Stepper({
     <View className="flex-row items-center gap-2">
       <StepButton
         icon={Minus}
+        size="sm"
         label={`${label}: ${REST_STEP_SEC} s less`}
         onPress={() => onStep(-REST_STEP_SEC)}
       />
@@ -206,31 +208,11 @@ function Stepper({
       </Text>
       <StepButton
         icon={Plus}
+        size="sm"
         label={`${label}: ${REST_STEP_SEC} s more`}
         onPress={() => onStep(REST_STEP_SEC)}
       />
     </View>
-  );
-}
-
-function StepButton({
-  icon: Icon,
-  label,
-  onPress,
-}: {
-  icon: typeof Minus;
-  label: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      className="w-9 h-9 rounded-full bg-card2 border border-line items-center justify-center active:opacity-80"
-    >
-      <Icon size={14} strokeWidth={2.4} color={colors.text} />
-    </Pressable>
   );
 }
 
