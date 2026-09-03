@@ -7,11 +7,8 @@ import Button from "@/components/UI/Button";
 import LoadingScreen from "@/components/UI/LoadingScreen";
 import Screen from "@/components/UI/Screen";
 import { colors } from "@/constants/theme";
-import {
-  groupSetsByEntry,
-  useSession,
-  useSessionSets,
-} from "@/db/queries/sessions";
+import { useSession, useSessionSets } from "@/db/queries/sessions";
+import { groupSetsByEntry } from "@/lib/session-sets";
 import { MeasuredBy } from "@/lib/enums";
 import { formatClock } from "@/lib/format";
 

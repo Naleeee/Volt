@@ -13,13 +13,13 @@ import StepButton from "@/components/UI/StepButton";
 import { MEASURED_BY_STYLES } from "@/constants/exercises";
 import { colors } from "@/constants/theme";
 import {
-  groupSetsByEntry,
   useGhostSets,
   useLastPerformedSet,
   useSession,
   useSessionSets,
   type SessionEntry,
 } from "@/db/queries/sessions";
+import { groupSetsByEntry } from "@/lib/session-sets";
 import type { SessionSet } from "@/db/schema";
 import { useSettings } from "@/db/queries/settings";
 import { MeasuredBy } from "@/lib/enums";

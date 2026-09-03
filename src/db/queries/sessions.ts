@@ -1,4 +1,4 @@
-import { startOfWeek, subWeeks } from "date-fns";
+import { startOfWeek } from "date-fns";
 import {
   and,
   asc,
@@ -12,6 +12,8 @@ import {
   sql,
 } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
+import { allocateLoggedSets, nextPosition } from "@/lib/session-sets";
+import { streakWeeks, WEEK } from "@/lib/streak";
 import { db } from "../client";
 import {
   exercises,
@@ -216,8 +218,6 @@ export type WeekStats = {
   streakWeeks: number;
 };
 
-const WEEK = { weekStartsOn: 1 as const }; // Monday, local time
-
 // This week's completed sessions (in-progress ones don't count yet) plus the weekly streak.
 export function useWeekStats(): WeekStats {
   const weekStart = startOfWeek(new Date(), WEEK).getTime();
@@ -267,23 +267,6 @@ export function useWeekStats(): WeekStats {
       weekStart,
     ),
   };
-}
-
-// Consecutive weeks with ≥1 completed session, counted back from this week — or from last week
-// while this one is still empty, so a streak isn't lost on Monday morning.
-export function streakWeeks(sessionStarts: number[], weekStart: number) {
-  const weeks = new Set(
-    sessionStarts.map((t) => startOfWeek(t, WEEK).getTime()),
-  );
-  let cursor = weeks.has(weekStart)
-    ? weekStart
-    : subWeeks(weekStart, 1).getTime();
-  let streak = 0;
-  while (weeks.has(cursor)) {
-    streak += 1;
-    cursor = subWeeks(cursor, 1).getTime();
-  }
-  return streak;
 }
 
 // ── writes (all synchronous on this driver) ───────────────────────────────────
@@ -340,43 +323,6 @@ export function discardSession(sessionId: number) {
 }
 
 // ── position ──────────────────────────────────────────────────────────────────
-
-export type SessionPosition = { exerciseIndex: number; setNumber: number };
-
-// Logged sets only carry exercise_id, and the same exercise can appear twice in a routine:
-// hand sets to entries in routine order, each entry taking at most its target.
-export function groupSetsByEntry<S extends Pick<SessionSet, "exerciseId">>(
-  entries: Pick<SessionEntry, "exerciseId" | "targetSets">[],
-  sets: S[],
-): S[][] {
-  const pool = new Map<number, S[]>();
-  for (const s of sets)
-    pool.set(s.exerciseId, [...(pool.get(s.exerciseId) ?? []), s]);
-  return entries.map((e) => {
-    const available = pool.get(e.exerciseId) ?? [];
-    const taken = available.slice(0, e.targetSets);
-    pool.set(e.exerciseId, available.slice(taken.length));
-    return taken;
-  });
-}
-
-export function allocateLoggedSets(
-  entries: Pick<SessionEntry, "exerciseId" | "targetSets">[],
-  sets: Pick<SessionSet, "exerciseId">[],
-): number[] {
-  return groupSetsByEntry(entries, sets).map((group) => group.length);
-}
-
-// First entry with sets left, or null when every planned set is logged.
-export function nextPosition(
-  entries: Pick<SessionEntry, "targetSets">[],
-  done: number[],
-): SessionPosition | null {
-  const exerciseIndex = done.findIndex((d, i) => d < entries[i].targetSets);
-  return exerciseIndex === -1
-    ? null
-    : { exerciseIndex, setNumber: done[exerciseIndex] + 1 };
-}
 
 export function getResumePosition(sessionId: number, routineId: number) {
   const entries = db
