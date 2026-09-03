@@ -107,10 +107,10 @@ export default function ExerciseForm({
               <MediaThumb
                 path={mediaPath}
                 type={mediaType}
-                className="h-48 rounded-3xl"
+                className="w-48 h-48 self-center rounded-3xl"
               />
             ) : (
-              <View className="h-48 rounded-3xl bg-card2 border-2 border-dashed border-white/20 items-center justify-center px-6">
+              <View className="w-48 h-48 self-center rounded-3xl bg-card2 border-2 border-dashed border-white/20 items-center justify-center px-6">
                 <Text className="font-archivo-semibold text-sm text-muted text-center">
                   Add a photo or GIF of the movement
                 </Text>
