@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { router, useLocalSearchParams } from "expo-router";
 import { Check } from "lucide-react-native";
+import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "@/components/UI/Button";
@@ -18,10 +19,11 @@ export default function SessionSummary() {
   const sessionId = Number(id);
   const session = useSession(sessionId);
   const sets = useSessionSets(sessionId);
+  const [mountedAt] = useState(() => Date.now());
 
   if (!session) return <LoadingScreen />;
 
-  const endedAt = session.endedAt ?? Date.now();
+  const endedAt = session.endedAt ?? mountedAt;
   const durationSec = Math.max(
     0,
     Math.floor((endedAt - session.startedAt) / 1000),

@@ -1,6 +1,6 @@
-import { useNavigation, usePreventRemove } from "@react-navigation/native";
 import { useKeepAwake } from "expo-keep-awake";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import { usePreventRemove } from "expo-router/react-navigation";
 import { useState } from "react";
 import { Alert, FlatList, Text, View } from "react-native";
 import RestBar from "@/components/sessions/RestBar";

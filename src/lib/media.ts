@@ -42,7 +42,7 @@ export function persistMedia(tempUri: string) {
   const base = tempUri.split("/").pop() ?? "";
   const dot = base.lastIndexOf(".");
   const name = `media-${Date.now()}${dot === -1 ? "" : base.slice(dot)}`;
-  new File(tempUri).copy(new File(dir, name));
+  new File(tempUri).copySync(new File(dir, name));
   return name;
 }
 
