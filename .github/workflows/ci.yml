@@ -40,7 +40,13 @@ jobs:
         run: |
           printf '/// <reference types="expo/types" />\n' > expo-env.d.ts
           mkdir -p .expo/types
-          EXPO_ROUTER_APP_ROOT="$PWD/src/app" node -e 'require("expo-router/build/typed-routes").regenerateDeclarations(".expo/types"); setTimeout(()=>{},1800)'
+          EXPO_ROUTER_APP_ROOT="$PWD/src/app" node -e '
+            const path = require("path");
+            const cli = require.resolve("@expo/cli", { paths: [path.join(process.cwd(), "node_modules", "expo")] });
+            const gen = require.resolve("@expo/router-server/build/typed-routes", { paths: [path.dirname(cli)] });
+            require(gen).regenerateDeclarations(".expo/types");
+            setTimeout(() => {}, 1800);
+          '
       - run: npx tsc --noEmit
 
   test-unit:
