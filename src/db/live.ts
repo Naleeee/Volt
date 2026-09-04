@@ -20,6 +20,7 @@ export function useLiveTables<T>(
         if (!disposed) setData(run());
       }, 0);
     };
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial read from SQLite; the listener only fires on later external changes
     setData(run());
     const listener = addDatabaseChangeListener(({ tableName }) => {
       if (tables.includes(tableName)) refresh();

@@ -1,17 +1,15 @@
 import { format } from "date-fns";
 import { router, useLocalSearchParams } from "expo-router";
 import { Check } from "lucide-react-native";
+import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "@/components/UI/Button";
 import LoadingScreen from "@/components/UI/LoadingScreen";
 import Screen from "@/components/UI/Screen";
 import { colors } from "@/constants/theme";
-import {
-  groupSetsByEntry,
-  useSession,
-  useSessionSets,
-} from "@/db/queries/sessions";
+import { useSession, useSessionSets } from "@/db/queries/sessions";
+import { groupSetsByEntry } from "@/lib/session-sets";
 import { MeasuredBy } from "@/lib/enums";
 import { formatClock } from "@/lib/format";
 
@@ -21,10 +19,11 @@ export default function SessionSummary() {
   const sessionId = Number(id);
   const session = useSession(sessionId);
   const sets = useSessionSets(sessionId);
+  const [mountedAt] = useState(() => Date.now());
 
   if (!session) return <LoadingScreen />;
 
-  const endedAt = session.endedAt ?? Date.now();
+  const endedAt = session.endedAt ?? mountedAt;
   const durationSec = Math.max(
     0,
     Math.floor((endedAt - session.startedAt) / 1000),

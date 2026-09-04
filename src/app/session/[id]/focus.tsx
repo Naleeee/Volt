@@ -13,13 +13,13 @@ import StepButton from "@/components/UI/StepButton";
 import { MEASURED_BY_STYLES } from "@/constants/exercises";
 import { colors } from "@/constants/theme";
 import {
-  groupSetsByEntry,
   useGhostSets,
   useLastPerformedSet,
   useSession,
   useSessionSets,
   type SessionEntry,
 } from "@/db/queries/sessions";
+import { groupSetsByEntry } from "@/lib/session-sets";
 import type { SessionSet } from "@/db/schema";
 import { useSettings } from "@/db/queries/settings";
 import { MeasuredBy } from "@/lib/enums";
@@ -270,18 +270,14 @@ function TitleBlock({
         <MediaThumb
           path={entry.mediaPath}
           type={entry.mediaType}
-          className="h-36 rounded-3xl mt-4"
+          className="w-36 h-36 self-center rounded-3xl mt-4"
         />
       )}
       <View
         className={`flex-row items-end justify-between mt-4 ${compact ? "gap-3.5" : ""}`}
       >
         {compact ? (
-          <MediaThumb
-            path={entry.mediaPath}
-            type={entry.mediaType}
-            className="w-14 h-14 rounded-2xl"
-          />
+          <MediaThumb path={entry.mediaPath} type={entry.mediaType} />
         ) : null}
         <View className="flex-1 pr-3">
           <Text

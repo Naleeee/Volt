@@ -1,0 +1,119 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  EXPO_NO_TELEMETRY: "1"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx expo lint -- --max-warnings 0
+
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # expo-env.d.ts and .expo/types are gitignored; tsc needs both.
+      - name: Generate type declarations
+        run: |
+          printf '/// <reference types="expo/types" />\n' > expo-env.d.ts
+          mkdir -p .expo/types
+          EXPO_ROUTER_APP_ROOT="$PWD/src/app" node -e '
+            const path = require("path");
+            const cli = require.resolve("@expo/cli", { paths: [path.join(process.cwd(), "node_modules", "expo")] });
+            const gen = require.resolve("@expo/router-server/build/typed-routes", { paths: [path.dirname(cli)] });
+            require(gen).regenerateDeclarations(".expo/types");
+            setTimeout(() => {}, 1800);
+          '
+      - run: npx tsc --noEmit
+
+  test-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx jest src/lib --ci
+
+  test-db:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx jest src/db --ci
+
+  migrations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Verify schema and migrations are in sync
+        run: |
+          npx drizzle-kit check
+          npx drizzle-kit generate
+          if [ -n "$(git status --porcelain src/db/drizzle)" ]; then
+            echo "::error::drizzle-kit generate produced changes — schema.ts and the migrations folder are out of sync"
+            git status --porcelain src/db/drizzle
+            exit 1
+          fi
+
+  bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Runs Metro end to end; catches broken imports and assets without a native toolchain.
+      - run: npx expo export --platform android --platform ios --output-dir dist
+
+  doctor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx expo-doctor

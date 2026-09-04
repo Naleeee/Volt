@@ -7,12 +7,8 @@ import Button from "@/components/UI/Button";
 import MediaThumb from "@/components/UI/MediaThumb";
 import Screen from "@/components/UI/Screen";
 import { colors } from "@/constants/theme";
-import {
-  groupSetsByEntry,
-  nextPosition,
-  useSession,
-  useSessionSets,
-} from "@/db/queries/sessions";
+import { useSession, useSessionSets } from "@/db/queries/sessions";
+import { groupSetsByEntry, nextPosition } from "@/lib/session-sets";
 import { MeasuredBy } from "@/lib/enums";
 import { formatClock } from "@/lib/format";
 import { restRemainingSec } from "@/lib/session-flow";

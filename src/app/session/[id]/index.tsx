@@ -1,6 +1,6 @@
-import { useNavigation, usePreventRemove } from "@react-navigation/native";
 import { useKeepAwake } from "expo-keep-awake";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import { usePreventRemove } from "expo-router/react-navigation";
 import { useState } from "react";
 import { Alert, FlatList, Text, View } from "react-native";
 import RestBar from "@/components/sessions/RestBar";
@@ -14,12 +14,11 @@ import LoadingScreen from "@/components/UI/LoadingScreen";
 import Screen from "@/components/UI/Screen";
 import {
   deleteSet,
-  groupSetsByEntry,
   useGhostSets,
-  nextPosition,
   useSession,
   useSessionSets,
 } from "@/db/queries/sessions";
+import { groupSetsByEntry, nextPosition } from "@/lib/session-sets";
 import { useSettings } from "@/db/queries/settings";
 import { formatClock } from "@/lib/format";
 import { restDurationFor } from "@/lib/rest";

@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FieldLabel from "@/components/UI/FieldLabel";
@@ -42,14 +42,13 @@ export default function ExerciseForm({
     control,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<ExerciseFormValues>({
     resolver: zodResolver(exerciseFormSchema),
     defaultValues: initial,
   });
-  const mediaPath = watch("mediaPath");
-  const mediaType = watch("mediaType");
+  const mediaPath = useWatch({ control, name: "mediaPath" });
+  const mediaType = useWatch({ control, name: "mediaType" });
 
   const pick = async () => {
     const picked = await pickMedia();
@@ -108,10 +107,10 @@ export default function ExerciseForm({
               <MediaThumb
                 path={mediaPath}
                 type={mediaType}
-                className="h-48 rounded-3xl"
+                className="w-48 h-48 self-center rounded-3xl"
               />
             ) : (
-              <View className="h-48 rounded-3xl bg-card2 border-2 border-dashed border-white/20 items-center justify-center px-6">
+              <View className="w-48 h-48 self-center rounded-3xl bg-card2 border-2 border-dashed border-white/20 items-center justify-center px-6">
                 <Text className="font-archivo-semibold text-sm text-muted text-center">
                   Add a photo or GIF of the movement
                 </Text>

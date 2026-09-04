@@ -1,8 +1,16 @@
-import * as Notifications from "expo-notifications";
+import { isRunningInExpoGo } from "expo";
 import { Platform } from "react-native";
 import { getSettings } from "@/db/queries/settings";
 
-Notifications.setNotificationHandler({
+// Importing expo-notifications crashes Expo Go on Android: push support was
+// removed there in SDK 53 and the module-load warning became a throw in SDK 55.
+const Notifications =
+  Platform.OS === "android" && isRunningInExpoGo()
+    ? null
+    : // eslint-disable-next-line @typescript-eslint/no-require-imports -- conditional load; a static import would evaluate the throwing module
+      (require("expo-notifications") as typeof import("expo-notifications"));
+
+Notifications?.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowBanner: false,
     shouldShowList: false,
@@ -15,6 +23,7 @@ let prepared: Promise<boolean> | undefined;
 
 async function prepare() {
   prepared ??= (async () => {
+    if (!Notifications) return false;
     if (Platform.OS === "android")
       await Notifications.setNotificationChannelAsync("rest", {
         name: "Rest timer",
@@ -29,9 +38,11 @@ async function prepare() {
 }
 
 let queue: Promise<unknown> =
-  Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
+  Notifications?.cancelAllScheduledNotificationsAsync().catch(() => {}) ??
+  Promise.resolve();
 
 export function syncRestEndNotification(restEndsAt: number | null) {
+  if (!Notifications) return;
   queue = queue
     .then(async () => {
       await Notifications.cancelAllScheduledNotificationsAsync();
