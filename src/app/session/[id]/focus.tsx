@@ -270,6 +270,7 @@ function TitleBlock({
         <MediaThumb
           path={entry.mediaPath}
           type={entry.mediaType}
+          animated
           className="w-36 h-36 self-center rounded-3xl mt-4"
         />
       )}
@@ -277,7 +278,7 @@ function TitleBlock({
         className={`flex-row items-end justify-between mt-4 ${compact ? "gap-3.5" : ""}`}
       >
         {compact ? (
-          <MediaThumb path={entry.mediaPath} type={entry.mediaType} />
+          <MediaThumb path={entry.mediaPath} type={entry.mediaType} animated />
         ) : null}
         <View className="flex-1 pr-3">
           <Text

@@ -107,6 +107,7 @@ export default function ExerciseForm({
               <MediaThumb
                 path={mediaPath}
                 type={mediaType}
+                animated
                 className="w-48 h-48 self-center rounded-3xl"
               />
             ) : (
