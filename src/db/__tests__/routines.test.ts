@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  archiveRoutine,
   defaultEntry,
   insertRoutine,
   routineFormSchema,
@@ -114,6 +115,16 @@ describe("insertRoutine / updateRoutine", () => {
       }),
     ).toThrow(/FOREIGN KEY/);
     expect(db.select().from(routines).all()).toHaveLength(0);
+  });
+});
+
+describe("archiveRoutine", () => {
+  it("hides the routine from the list but keeps it resolvable for history", () => {
+    const [bench] = seedExercises();
+    const { id } = insertRoutine({ name: "Push", entries: [defaultEntry(bench)] });
+    archiveRoutine(id);
+    expect(useRoutines()).toEqual([]);
+    expect(useRoutine(id)?.name).toBe("Push");
   });
 });
 

@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react-native";
 import { ActivityIndicator, Pressable, Text } from "react-native";
 import { colors } from "@/constants/theme";
 
-type Variant = "primary" | "secondary" | "time" | "outline" | "dashed";
+type Variant = "primary" | "secondary" | "time" | "outline" | "dashed" | "danger";
 type Size = "sm" | "md" | "lg";
 
 const VARIANTS: Record<
@@ -34,6 +34,11 @@ const VARIANTS: Record<
     text: "text-muted",
     color: colors.muted,
     textSize: "text-sm",
+  },
+  danger: {
+    box: "border border-danger/35 rounded-2xl",
+    text: "text-danger",
+    color: colors.danger,
   },
 };
 

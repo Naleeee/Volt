@@ -13,7 +13,15 @@ export const MEASURED_BY_FILTERS = [
 // Per-type styling. `color` is the hex for Reanimated/props; the rest are NativeWind classes.
 export const MEASURED_BY_STYLES: Record<
   MeasuredBy,
-  { color: string; text: string; bg: string; box: string; edge: string; ring: string }
+  {
+    color: string;
+    text: string;
+    bg: string;
+    box: string;
+    edge: string;
+    ring: string;
+    chip: string;
+  }
 > = {
   [MeasuredBy.Reps]: {
     color: colors.accent,
@@ -22,6 +30,7 @@ export const MEASURED_BY_STYLES: Record<
     box: "border-accent/35",
     edge: "border-l-accent",
     ring: "border-accent",
+    chip: "bg-accent/15",
   },
   [MeasuredBy.Time]: {
     color: colors.time,
@@ -30,6 +39,7 @@ export const MEASURED_BY_STYLES: Record<
     box: "border-time/35",
     edge: "border-l-time",
     ring: "border-time",
+    chip: "bg-time/15",
   },
   [MeasuredBy.Other]: {
     color: colors.other,
@@ -38,5 +48,6 @@ export const MEASURED_BY_STYLES: Record<
     box: "border-other/35",
     edge: "border-l-other",
     ring: "border-other",
+    chip: "bg-other/15",
   },
 };
