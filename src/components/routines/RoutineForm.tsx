@@ -152,8 +152,8 @@ export default function RoutineForm({ title, initial, onSave }: Props) {
       <ExercisePickerModal
         visible={pickerOpen}
         onClose={() => setPickerOpen(false)}
-        onPick={(exercise) => {
-          append(defaultEntry(exercise));
+        onAdd={(picked) => {
+          append(picked.map((exercise) => defaultEntry(exercise)));
           setPickerOpen(false);
         }}
       />
