@@ -271,7 +271,8 @@ function TitleBlock({
           path={entry.mediaPath}
           type={entry.mediaType}
           animated
-          className="w-36 h-36 self-center rounded-3xl mt-4"
+          maxHeight={288}
+          className="rounded-3xl mt-4"
         />
       )}
       <View
