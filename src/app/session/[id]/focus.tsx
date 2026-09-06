@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { Minus, Pause, Play, Plus } from "lucide-react-native";
+import { Minus, Plus } from "lucide-react-native";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -254,33 +254,24 @@ function TitleBlock({
   setNumber,
   logged,
   subtitle,
-  compact = false,
 }: {
   entry: SessionEntry;
   setNumber: number;
   logged: SessionSet[];
   subtitle: string;
-  compact?: boolean;
 }) {
   const type = MEASURED_BY_STYLES[entry.measuredBy];
   const done = setNumber > entry.targetSets;
   return (
     <>
-      {compact ? null : (
-        <MediaThumb
-          path={entry.mediaPath}
-          type={entry.mediaType}
-          animated
-          maxHeight={288}
-          className="rounded-3xl mt-4"
-        />
-      )}
-      <View
-        className={`flex-row items-end justify-between mt-4 ${compact ? "gap-3.5" : ""}`}
-      >
-        {compact ? (
-          <MediaThumb path={entry.mediaPath} type={entry.mediaType} animated />
-        ) : null}
+      <MediaThumb
+        path={entry.mediaPath}
+        type={entry.mediaType}
+        animated
+        maxHeight={288}
+        className="rounded-3xl mt-4"
+      />
+      <View className="flex-row items-end justify-between mt-4">
         <View className="flex-1 pr-3">
           <Text
             className={"font-archivo-black text-3xl text-text tracking-tighter"}
@@ -336,34 +327,6 @@ function GhostLine({
   );
 }
 
-function LastSetLine({
-  set,
-  unit,
-}: {
-  set: SessionSet | undefined;
-  unit: "reps" | "sec" | "note";
-}) {
-  if (!set)
-    return (
-      <Text className="font-archivo text-sm text-muted text-center mb-3.5">
-        {" "}
-      </Text>
-    );
-  const value =
-    unit === "reps" ? set.reps : unit === "sec" ? set.timeSec : set.note;
-  const weight =
-    set.weightKg !== null ? ` @ ${formatWeight(set.weightKg)}` : "";
-  return (
-    <Text className="font-archivo text-sm text-muted text-center mb-3.5">
-      Set {set.setNumber} ·{" "}
-      <Text className="font-archivo-bold text-text">
-        {unit === "note" ? value : `${value} ${unit}${weight}`}
-      </Text>
-      <Text className="text-accent">✓</Text>
-    </Text>
-  );
-}
-
 function RepsFocus({
   entry,
   setNumber,
@@ -379,7 +342,6 @@ function RepsFocus({
   const reps = repsOverride ?? entry.targetReps ?? 0;
   const hasWeight = entry.targetWeightKg !== null;
   const weight = weightOverride ?? entry.targetWeightKg ?? 0;
-  const lastLogged = [...logged].reverse().find((s) => !s.skipped);
   const subtitle = `${hasWeight ? `${formatWeight(weight)} · ` : ""}target ${entry.targetReps ?? "–"} reps`;
 
   return (
@@ -442,7 +404,6 @@ function RepsFocus({
         </View>
       ) : null}
       <GhostLine set={ghost} measuredBy={entry.measuredBy} />
-      <LastSetLine set={lastLogged} unit="reps" />
       {footer(
         <Button
           label={autoRest ? "Log set · start rest" : "Log set"}
@@ -457,6 +418,8 @@ function RepsFocus({
   );
 }
 
+const MAX_RING = 264;
+
 function TimeFocus({
   entry,
   setNumber,
@@ -469,13 +432,13 @@ function TimeFocus({
 }: FocusProps & { now: number }) {
   const { holdStartedAt, holdElapsedMs, startHold, pauseHold } =
     useSessionStore();
+  const [ringSize, setRingSize] = useState(0);
   const targetSec = entry.targetTimeSec ?? 0;
   const running = holdStartedAt !== null;
   const elapsedMs =
     holdElapsedMs + (running ? Math.max(0, now - holdStartedAt) : 0);
   const remainingMs = Math.max(0, targetSec * 1000 - elapsedMs);
   const reachedTarget = running && remainingMs <= 0;
-  const lastLogged = [...logged].reverse().find((s) => !s.skipped);
 
   // The countdown crossing zero is a clock event, not a tap — log the target once it happens.
   // The ref guards against the effect re-running before the store update lands.
@@ -492,7 +455,13 @@ function TimeFocus({
   }, [reachedTarget, onComplete, targetSec, entry.targetWeightKg]);
 
   const label = running ? "Pause" : elapsedMs > 0 ? "Resume" : "Start hold";
-  const Icon = running ? Pause : Play;
+  const hint = running
+    ? "HOLD"
+    : elapsedMs > 0
+      ? "TAP TO RESUME"
+      : "TAP TO START";
+  // 72px digits on the full 264 ring, scaled down with it on short screens.
+  const digits = Math.round(ringSize * 0.27);
 
   return (
     <>
@@ -501,40 +470,52 @@ function TimeFocus({
         setNumber={setNumber}
         logged={logged}
         subtitle={`target ${targetSec} sec`}
-        compact
       />
-      <View className="flex-1 items-center justify-center">
-        <TimerRing
-          progress={targetSec > 0 ? remainingMs / (targetSec * 1000) : 0}
-          color={colors.time}
-        >
-          <Text
-            className="font-archivo-black text-7xl text-time tracking-tight"
-            style={{
-              fontVariant: ["tabular-nums"],
-              lineHeight: 72,
-              includeFontPadding: false,
-            }}
+      <View
+        className="flex-1 items-center justify-end"
+        onLayout={(e) =>
+          setRingSize(
+            Math.min(
+              MAX_RING,
+              e.nativeEvent.layout.width,
+              e.nativeEvent.layout.height,
+            ),
+          )
+        }
+      >
+        {ringSize > 0 ? (
+          <Pressable
+            onPress={running ? pauseHold : startHold}
+            accessibilityRole="button"
+            accessibilityLabel={label}
+            className="active:opacity-80"
           >
-            {formatClock(Math.ceil(remainingMs / 1000))}
-          </Text>
-          <Text className="font-archivo-bold text-xs tracking-widest text-muted mt-2">
-            HOLD
-          </Text>
-        </TimerRing>
-        <View className="mt-5">
-          <GhostLine set={ghost} measuredBy={entry.measuredBy} />
-          <LastSetLine set={lastLogged} unit="sec" />
-        </View>
+            <TimerRing
+              size={ringSize}
+              progress={targetSec > 0 ? remainingMs / (targetSec * 1000) : 0}
+              color={colors.time}
+            >
+              <Text
+                className="font-archivo-black text-time tracking-tight"
+                style={{
+                  fontSize: digits,
+                  lineHeight: digits,
+                  fontVariant: ["tabular-nums"],
+                  includeFontPadding: false,
+                }}
+              >
+                {formatClock(Math.ceil(remainingMs / 1000))}
+              </Text>
+              <Text className="font-archivo-bold text-xs tracking-widest text-muted mt-2">
+                {hint}
+              </Text>
+            </TimerRing>
+          </Pressable>
+        ) : null}
       </View>
+      <GhostLine set={ghost} measuredBy={entry.measuredBy} />
       {footer(
-        <Button
-          variant="time"
-          label={label}
-          icon={Icon}
-          iconFill
-          onPress={running ? pauseHold : startHold}
-        />,
+        null,
         elapsedMs > 0 ? "Log early" : "Skip set",
         elapsedMs > 0
           ? () =>
@@ -603,7 +584,6 @@ function OtherFocus({
       </View>
       <View className="flex-1" />
       <GhostLine set={ghost} measuredBy={entry.measuredBy} />
-      <LastSetLine set={lastLogged} unit="note" />
       {footer(
         <Button
           label={autoRest ? "Log set · start rest" : "Log set"}
