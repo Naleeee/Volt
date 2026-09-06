@@ -1,40 +1,100 @@
+import { useEventListener } from "expo";
 import { Image } from "expo-image";
-import { useVideoPlayer, VideoView } from "expo-video";
-import { View } from "react-native";
+import { createVideoPlayer, useVideoPlayer, VideoView } from "expo-video";
+import type { VideoThumbnail } from "expo-video";
+import { useEffect, useState } from "react";
+import { Dimensions, View } from "react-native";
 import { MediaType } from "@/lib/enums";
 import { isStoredName, mediaUri } from "@/lib/media";
 
 type Props = {
   path: string | null;
   type: MediaType | null;
+  animated?: boolean;
+  maxHeight?: number;
   className?: string;
 };
+
+type OnSize = (width: number, height: number) => void;
 
 // expo-image / VideoView don't take className, so the wrapper carries layout.
 const FILL = { width: "100%", height: "100%" } as const;
 
-export default function MediaThumb({ path, type, className = "" }: Props) {
+export default function MediaThumb({
+  path,
+  type,
+  animated = false,
+  maxHeight,
+  className = "",
+}: Props) {
   const uri = path ? (isStoredName(path) ? mediaUri(path) : path) : null;
-  return (
-    <View className={`overflow-hidden bg-card2 ${className}`}>
+  const [sized, setSized] = useState<{ uri: string; ratio: number } | null>(
+    null,
+  );
+  const [available, setAvailable] = useState(
+    () => Dimensions.get("window").width,
+  );
+  const ratio = sized?.uri === uri ? sized.ratio : 1;
+  const onSize: OnSize = (width, height) => {
+    if (uri && width > 0 && height > 0)
+      setSized({ uri, ratio: width / height });
+  };
+
+  const box = (
+    <View
+      className={`overflow-hidden bg-card2 ${className}`}
+      style={
+        maxHeight === undefined
+          ? undefined
+          : {
+              width: Math.min(available, maxHeight * ratio),
+              aspectRatio: ratio,
+            }
+      }
+    >
       {uri ? (
         type === MediaType.Video ? (
-          <VideoThumb uri={uri} />
+          animated ? (
+            <VideoThumb uri={uri} onSize={onSize} />
+          ) : (
+            <VideoStill uri={uri} onSize={onSize} />
+          )
         ) : (
-          <Image source={{ uri }} contentFit="cover" style={FILL} />
+          <Image
+            source={{ uri }}
+            contentFit="cover"
+            style={FILL}
+            autoplay={animated}
+            onLoad={(e) => onSize(e.source.width, e.source.height)}
+          />
         )
       ) : null}
     </View>
   );
+
+  if (maxHeight === undefined) return box;
+  return (
+    <View
+      className="w-full items-center"
+      onLayout={(e) => setAvailable(e.nativeEvent.layout.width)}
+    >
+      {box}
+    </View>
+  );
 }
 
+type MediaProps = { uri: string; onSize: OnSize };
+
 // Split out so a native player is only allocated for actual videos.
-function VideoThumb({ uri }: { uri: string }) {
+function VideoThumb({ uri, onSize }: MediaProps) {
   const player = useVideoPlayer(uri, (p) => {
     p.loop = true;
     p.muted = true;
     p.audioMixingMode = "mixWithOthers";
     p.play();
+  });
+  useEventListener(player, "videoTrackChange", ({ videoTrack }) => {
+    if (videoTrack) onSize(videoTrack.size.width, videoTrack.size.height);
   });
   return (
     <VideoView
@@ -44,4 +104,32 @@ function VideoThumb({ uri }: { uri: string }) {
       style={FILL}
     />
   );
+}
+
+function VideoStill({ uri, onSize }: MediaProps) {
+  const [frame, setFrame] = useState<VideoThumbnail | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const player = createVideoPlayer(uri);
+    player
+      .generateThumbnailsAsync(0)
+      .then(([thumb]) => {
+        if (!cancelled) setFrame(thumb);
+      })
+      .catch((error) => {
+        if (__DEV__) console.error(error);
+      })
+      .finally(() => player.release());
+    return () => {
+      cancelled = true;
+    };
+  }, [uri]);
+  return frame ? (
+    <Image
+      source={frame}
+      contentFit="cover"
+      style={FILL}
+      onLoad={(e) => onSize(e.source.width, e.source.height)}
+    />
+  ) : null;
 }

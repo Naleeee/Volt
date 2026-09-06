@@ -23,7 +23,7 @@ export default function ExerciseCard({
     <Pressable
       onPress={() => router.push(`/exercise/${exerciseId}`)}
       accessibilityRole="button"
-      className="flex-1 max-w-[50%] bg-bg h-70 active:opacity-80"
+      className="flex-1 max-w-[50%] bg-bg active:opacity-80"
     >
       {mediaPath ? (
         <MediaThumb
@@ -36,7 +36,7 @@ export default function ExerciseCard({
           <Text className="font-archivo-bold text-sm text-text">No Image</Text>
         </View>
       )}
-      <View className="flex-1 flex-row justify-between items-center gap-2 p-4 bg-card rounded-b-3xl border border-t-0 border-muted/50">
+      <View className="flex-row justify-between items-center gap-2 p-4 bg-card rounded-b-3xl border border-t-0 border-muted/50">
         <Text
           className="flex-1 font-archivo-bold text-sm text-text"
           numberOfLines={1}
