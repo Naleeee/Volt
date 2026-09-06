@@ -55,6 +55,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@testing-library/react-native": "^14.0.1",
     "@types/better-sqlite3": "^9.6.0",
     "@types/jest": "^29.5.14",
     "@types/react": "~19.2.4",
@@ -70,6 +71,7 @@
     "jest-expo": "~57.0.5",
     "postcss": "^8.5.26",
     "tailwindcss": "^3.4.19",
+    "test-renderer": "^1.2.0",
     "typescript": "~6.0.3"
   },
   "private": true

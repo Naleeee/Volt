@@ -41,6 +41,13 @@ describe("describeSet", () => {
     );
     expect(describeSet(set({}), MeasuredBy.Other)).toBe("–");
   });
+
+  it("dashes out missing reps and time", () => {
+    expect(describeSet(set({}), MeasuredBy.Reps)).toBe("–");
+    expect(describeSet(set({ weightKg: 60 }), MeasuredBy.Reps)).toBe("– @ 60 kg");
+    expect(describeSet(set({}), MeasuredBy.Time)).toBe("– sec");
+    expect(describeSet(set({}), MeasuredBy.Time, true)).toBe("– s");
+  });
 });
 
 const entry = (over: Partial<Parameters<typeof describeEntry>[0]>) => ({
@@ -82,5 +89,13 @@ describe("describeEntry", () => {
 
   it("falls back to a dash for missing targets", () => {
     expect(describeEntry(entry({ targetReps: null }))).toBe("3 × – reps");
+    expect(describeEntry(entry({ measuredBy: MeasuredBy.Time, targetReps: null }))).toBe("3 × – sec");
+  });
+
+  it("adds weight to holds and pluralises free-form sets", () => {
+    expect(
+      describeEntry(entry({ measuredBy: MeasuredBy.Time, targetTimeSec: 45, targetWeightKg: 10 })),
+    ).toBe("3 × 45 sec · 10 kg");
+    expect(describeEntry(entry({ measuredBy: MeasuredBy.Other }))).toBe("3 sets");
   });
 });
