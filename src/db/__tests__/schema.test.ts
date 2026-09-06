@@ -3,6 +3,7 @@ import Database from "better-sqlite3";
 import { eq } from "drizzle-orm";
 import { drizzle, type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import { getTableConfig, type SQLiteTable } from "drizzle-orm/sqlite-core";
 import * as schema from "../schema";
 
 const { exercises, routines, routineExercises, sessions, sessionSets, settings } =
@@ -110,5 +111,30 @@ describe("schema behavior", () => {
     write("false");
     const rows = db.select().from(settings).all();
     expect(rows).toEqual([{ key: "timerSounds", value: "false" }]);
+  });
+});
+
+describe("declared foreign keys", () => {
+  const declared = (table: SQLiteTable) =>
+    getTableConfig(table).foreignKeys.map((fk) => {
+      const ref = fk.reference();
+      return [
+        ref.columns[0].name,
+        `${getTableConfig(ref.foreignTable).name}.${ref.foreignColumns[0].name}`,
+        fk.onDelete ?? "no action",
+      ];
+    });
+
+  it("cascade only from a routine to its entries and from a session to its sets", () => {
+    expect(declared(routineExercises)).toEqual([
+      ["routine_id", "routines.id", "cascade"],
+      ["exercise_id", "exercises.id", "no action"],
+    ]);
+    expect(declared(sessions)).toEqual([["routine_id", "routines.id", "no action"]]);
+    expect(declared(sessionSets)).toEqual([
+      ["session_id", "sessions.id", "cascade"],
+      ["exercise_id", "exercises.id", "no action"],
+    ]);
+    expect(declared(exercises)).toEqual([]);
   });
 });

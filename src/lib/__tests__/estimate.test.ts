@@ -36,6 +36,13 @@ describe("estimateRoutineSeconds", () => {
     expect(estimateRoutineSeconds([e], rest)).toBe(150);
   });
 
+  it("counts only rest when a target is missing", () => {
+    expect(estimateRoutineSeconds([entry({ targetReps: null })], rest)).toBe(120);
+    expect(
+      estimateRoutineSeconds([entry({ measuredBy: MeasuredBy.Time, targetReps: null })], rest),
+    ).toBe(120);
+  });
+
   it("adds rest between exercises", () => {
     expect(estimateRoutineSeconds([entry({}), entry({})], rest)).toBe(
       210 + 210 + 90,
