@@ -37,3 +37,6 @@ yarn-error.*
 # Builds output
 android/
 ios/
+
+# test coverage
+coverage/
