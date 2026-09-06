@@ -157,6 +157,14 @@ export function updateRoutine(id: number, values: RoutineFormValues) {
   });
 }
 
+// Soft delete: sessions still reference the routine, and the Home list already hides archived rows.
+export function archiveRoutine(id: number) {
+  db.update(routines)
+    .set({ archivedAt: Date.now() })
+    .where(eq(routines.id, id))
+    .run();
+}
+
 function toEntryRow(routineId: number, e: RoutineEntry, index: number) {
   return {
     routineId,

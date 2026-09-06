@@ -1,5 +1,9 @@
 import type { SessionSet } from "@/db/schema";
-import { describeEntry, describeTargets } from "@/lib/describe-entry";
+import {
+  describeEntry,
+  describeTargetChip,
+  describeTargets,
+} from "@/lib/describe-entry";
 import { describeSet } from "@/lib/describe-set";
 import { MeasuredBy } from "@/lib/enums";
 
@@ -97,5 +101,26 @@ describe("describeEntry", () => {
       describeEntry(entry({ measuredBy: MeasuredBy.Time, targetTimeSec: 45, targetWeightKg: 10 })),
     ).toBe("3 × 45 sec · 10 kg");
     expect(describeEntry(entry({ measuredBy: MeasuredBy.Other }))).toBe("3 sets");
+  });
+});
+
+describe("describeTargetChip", () => {
+  it("splits the target chip from the weight", () => {
+    expect(describeTargetChip(entry({ targetSets: 4, targetWeightKg: 60 }))).toEqual({
+      target: "4 sets × 8 reps",
+      weight: "60 kg",
+    });
+    expect(
+      describeTargetChip(
+        entry({ measuredBy: MeasuredBy.Time, targetReps: null, targetTimeSec: 45 }),
+      ),
+    ).toEqual({ target: "3 sets × 45 sec", weight: null });
+  });
+
+  it("singularises one set and ignores weight on free-form entries", () => {
+    expect(describeTargetChip(entry({ targetSets: 1 })).target).toBe("1 set × 8 reps");
+    expect(
+      describeTargetChip(entry({ measuredBy: MeasuredBy.Other, targetWeightKg: 10 })),
+    ).toEqual({ target: "3 sets", weight: null });
   });
 });
