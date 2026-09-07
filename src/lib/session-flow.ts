@@ -11,6 +11,7 @@ import {
 } from "@/db/queries/sessions";
 import type { Settings } from "@/db/queries/settings";
 import { restDurationFor } from "@/lib/rest";
+import { nextPositionFrom, openSetNumbers } from "@/lib/session-sets";
 import { useSessionStore } from "@/lib/session-store";
 import { toast } from "@/lib/toast";
 
@@ -30,9 +31,10 @@ export function startWorkout(routineId: number) {
 
 type SetValues = Omit<LogSetInput, "sessionId" | "exerciseId" | "setNumber">;
 
-// Writes the set, moves the pointer, and starts rest unless the workout's final set was logged.
+// Writes the set, points the store at the nearest open set, and starts rest unless the workout is complete.
 export function logSetAndAdvance(
   session: Pick<SessionDetail, "id" | "entries">,
+  grouped: { setNumber: number }[][],
   index: number,
   setNumber: number,
   settings: Settings,
@@ -47,15 +49,14 @@ export function logSetAndAdvance(
     ...values,
   });
 
+  const after = grouped.map((g, i) => (i === index ? [...g, { setNumber }] : g));
+  const lastOfExercise = openSetNumbers(entry, after[index]).length === 0;
+  const next = nextPositionFrom(session.entries, after, index);
   const { setPosition, startRest } = useSessionStore.getState();
-  const lastOfExercise = setNumber >= entry.targetSets;
-  if (lastOfExercise)
-    setPosition(Math.min(index + 1, session.entries.length - 1), 1);
-  else setPosition(index, setNumber + 1);
+  setPosition(next?.exerciseIndex ?? index, next?.setNumber ?? setNumber);
 
-  const lastOfWorkout = lastOfExercise && index === session.entries.length - 1;
   const restStarted =
-    !values.skipped && settings.autostartRestTimer && !lastOfWorkout;
+    !values.skipped && settings.autostartRestTimer && next !== null;
   if (restStarted) startRest(restDurationFor(entry, settings, lastOfExercise));
   return { lastOfExercise, restStarted };
 }

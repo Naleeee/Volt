@@ -12,7 +12,7 @@ import {
   sql,
 } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
-import { allocateLoggedSets, nextPosition } from "@/lib/session-sets";
+import { groupSetsByEntry, nextPosition } from "@/lib/session-sets";
 import { streakWeeks, WEEK } from "@/lib/streak";
 import { db } from "../client";
 import {
@@ -335,9 +335,13 @@ export function getResumePosition(sessionId: number, routineId: number) {
     .orderBy(asc(routineExercises.position))
     .all();
   const sets = db
-    .select({ exerciseId: sessionSets.exerciseId })
+    .select({
+      exerciseId: sessionSets.exerciseId,
+      setNumber: sessionSets.setNumber,
+    })
     .from(sessionSets)
     .where(eq(sessionSets.sessionId, sessionId))
+    .orderBy(asc(sessionSets.completedAt))
     .all();
-  return nextPosition(entries, allocateLoggedSets(entries, sets));
+  return nextPosition(entries, groupSetsByEntry(entries, sets));
 }

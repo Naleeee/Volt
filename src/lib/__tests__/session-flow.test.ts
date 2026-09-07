@@ -92,7 +92,7 @@ describe("startWorkout", () => {
 describe("logSetAndAdvance", () => {
   it("writes the set, moves to the next set and rests between sets", () => {
     store().begin(5);
-    const result = logSetAndAdvance(session, 0, 1, settings, { reps: 8, weightKg: 60 });
+    const result = logSetAndAdvance(session, [[], []], 0, 1, settings, { reps: 8, weightKg: 60 });
     expect(logSet).toHaveBeenCalledWith({ sessionId: 5, exerciseId: 1, setNumber: 1, reps: 8, weightKg: 60 });
     expect(Haptics.impactAsync).toHaveBeenCalledWith("medium");
     expect(result).toEqual({ lastOfExercise: false, restStarted: true });
@@ -101,21 +101,21 @@ describe("logSetAndAdvance", () => {
 
   it("moves to the next exercise after its last set with the longer rest", () => {
     store().begin(5);
-    const result = logSetAndAdvance(session, 0, 2, settings, { reps: 8 });
+    const result = logSetAndAdvance(session, [[{ setNumber: 1 }], []], 0, 2, settings, { reps: 8 });
     expect(result).toEqual({ lastOfExercise: true, restStarted: true });
     expect(store()).toMatchObject({ exerciseIndex: 1, setNumber: 1, restDurationSec: 90 });
   });
 
   it("stays on the last entry and skips rest after the final set of the workout", () => {
     store().begin(5);
-    const result = logSetAndAdvance(session, 1, 1, settings, { timeSec: 45 });
+    const result = logSetAndAdvance(session, [[{ setNumber: 1 }, { setNumber: 2 }], []], 1, 1, settings, { timeSec: 45 });
     expect(result).toEqual({ lastOfExercise: true, restStarted: false });
     expect(store()).toMatchObject({ exerciseIndex: 1, setNumber: 1, restEndsAt: null });
   });
 
   it("skipped sets get no haptics and no rest", () => {
     store().begin(5);
-    const result = logSetAndAdvance(session, 0, 1, settings, { skipped: true });
+    const result = logSetAndAdvance(session, [[], []], 0, 1, settings, { skipped: true });
     expect(Haptics.impactAsync).not.toHaveBeenCalled();
     expect(result.restStarted).toBe(false);
     expect(store().restEndsAt).toBeNull();
@@ -123,11 +123,18 @@ describe("logSetAndAdvance", () => {
 
   it("respects the auto-start setting and per-exercise override", () => {
     store().begin(5);
-    expect(logSetAndAdvance(session, 0, 1, { ...settings, autostartRestTimer: false }, { reps: 8 }).restStarted).toBe(false);
+    expect(logSetAndAdvance(session, [[], []], 0, 1, { ...settings, autostartRestTimer: false }, { reps: 8 }).restStarted).toBe(false);
 
     const three = { id: 5, entries: [...session.entries, entry({ exerciseId: 3 })] };
-    logSetAndAdvance(three, 1, 1, settings, { timeSec: 45 });
+    logSetAndAdvance(three, [[{ setNumber: 1 }, { setNumber: 2 }], [], []], 1, 1, settings, { timeSec: 45 });
     expect(store().restDurationSec).toBe(120);
+  });
+
+  it("moves to the nearest exercise with open sets, wrapping to earlier ones", () => {
+    store().begin(5);
+    const three = { id: 5, entries: [...session.entries, entry({ exerciseId: 3, targetSets: 1 })] };
+    logSetAndAdvance(three, [[{ setNumber: 1 }], [{ setNumber: 1 }], []], 2, 1, settings, { reps: 8 });
+    expect(store()).toMatchObject({ exerciseIndex: 0, setNumber: 2, restDurationSec: 90 });
   });
 });
 

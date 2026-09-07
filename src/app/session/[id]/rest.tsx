@@ -8,7 +8,11 @@ import MediaThumb from "@/components/UI/MediaThumb";
 import Screen from "@/components/UI/Screen";
 import { colors } from "@/constants/theme";
 import { useSession, useSessionSets } from "@/db/queries/sessions";
-import { groupSetsByEntry, nextPosition } from "@/lib/session-sets";
+import {
+  groupSetsByEntry,
+  nextPosition,
+  openSetNumbers,
+} from "@/lib/session-sets";
 import { MeasuredBy } from "@/lib/enums";
 import { formatClock } from "@/lib/format";
 import { restRemainingSec } from "@/lib/session-flow";
@@ -22,8 +26,14 @@ export default function RestScreen() {
   const session = useSession(sessionId);
   const sets = useSessionSets(sessionId);
   const now = useNow();
-  const { restEndsAt, restDurationSec, extendRest, clearRest } =
-    useSessionStore();
+  const {
+    exerciseIndex,
+    setNumber,
+    restEndsAt,
+    restDurationSec,
+    extendRest,
+    clearRest,
+  } = useSessionStore();
 
   const remainingSec = restRemainingSec(restEndsAt, restDurationSec, now);
   const over = restEndsAt === null || remainingSec <= 0;
@@ -42,8 +52,13 @@ export default function RestScreen() {
 
   const upNext = (() => {
     if (!session) return null;
-    const done = groupSetsByEntry(session.entries, sets).map((g) => g.length);
-    const position = nextPosition(session.entries, done);
+    const grouped = groupSetsByEntry(session.entries, sets);
+    const pointed = session.entries[exerciseIndex];
+    // The store points at the set this rest leads into; fall back if it was logged meanwhile.
+    const position =
+      pointed && openSetNumbers(pointed, grouped[exerciseIndex]).includes(setNumber)
+        ? { exerciseIndex, setNumber }
+        : nextPosition(session.entries, grouped);
     if (!position)
       return { entry: null, label: "All sets done — finish when you're ready" };
     const entry = session.entries[position.exerciseIndex];

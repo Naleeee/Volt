@@ -18,7 +18,11 @@ import {
   useSession,
   useSessionSets,
 } from "@/db/queries/sessions";
-import { groupSetsByEntry, nextPosition } from "@/lib/session-sets";
+import {
+  groupSetsByEntry,
+  nextPosition,
+  openSetNumbers,
+} from "@/lib/session-sets";
 import { useSettings } from "@/db/queries/settings";
 import { formatClock } from "@/lib/format";
 import { restDurationFor } from "@/lib/rest";
@@ -29,6 +33,9 @@ import {
 } from "@/lib/session-flow";
 import { useSessionStore } from "@/lib/session-store";
 import { useNow } from "@/lib/use-now";
+
+// Manual expand/collapse taps, remembered only while the same exercise is active.
+type Expansion = { active: number; toggled: Record<number, boolean> };
 
 export default function SessionChecklist() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -41,9 +48,18 @@ export default function SessionChecklist() {
   );
   const settings = useSettings();
   const now = useNow();
-  const { restEndsAt, restDurationSec, clearRest, setPosition } =
-    useSessionStore();
-  const [reopenedIndex, setReopenedIndex] = useState<number | null>(null);
+  const {
+    exerciseIndex,
+    setNumber: storedSet,
+    restEndsAt,
+    restDurationSec,
+    clearRest,
+    setPosition,
+  } = useSessionStore();
+  const [expansion, setExpansion] = useState<Expansion>({
+    active: -1,
+    toggled: {},
+  });
   const navigation = useNavigation();
 
   usePreventRemove(true, ({ data }) => {
@@ -69,26 +85,37 @@ export default function SessionChecklist() {
 
   const grouped = groupSetsByEntry(session.entries, sets);
   const ghostByEntry = groupSetsByEntry(session.entries, ghosts);
-  const done = grouped.map((g) => g.length);
-  const position = nextPosition(session.entries, done);
+  const activeIndex = Math.min(exerciseIndex, session.entries.length - 1);
+  const allDone = nextPosition(session.entries, grouped) === null;
   const elapsedSec = Math.max(0, Math.floor((now - session.startedAt) / 1000));
   const restRemaining = restRemainingSec(restEndsAt, restDurationSec, now);
   const resting = restRemaining > 0;
 
-  const logCurrentSet = (setNumber: number) => {
-    if (!position) return;
-    const entry = session.entries[position.exerciseIndex];
-    logSetAndAdvance(session, position.exerciseIndex, setNumber, settings, {
+  const toggled = expansion.active === activeIndex ? expansion.toggled : {};
+  const isExpanded = (index: number) => toggled[index] ?? index === activeIndex;
+  const toggle = (index: number) =>
+    setExpansion({
+      active: activeIndex,
+      toggled: { ...toggled, [index]: !isExpanded(index) },
+    });
+
+  const logSet = (index: number, setNumber: number) => {
+    const entry = session.entries[index];
+    logSetAndAdvance(session, grouped, index, setNumber, settings, {
       reps: entry.targetReps,
       timeSec: entry.targetTimeSec,
       weightKg: entry.targetWeightKg,
     });
   };
 
-  // Only the last logged set of the current exercise can be undone, so set numbers stay contiguous.
   const unlogSet = (setId: number) => {
     deleteSet(setId);
     clearRest();
+  };
+
+  const openSet = (index: number, setNumber: number) => {
+    setPosition(index, setNumber);
+    router.push({ pathname: "/session/[id]/focus", params: { id } });
   };
 
   const finish = () => finishWorkout(sessionId, session.entries, sets.length);
@@ -120,63 +147,47 @@ export default function SessionChecklist() {
           gap: 8,
         }}
         renderItem={({ item, index }) => {
-          if (position && position.exerciseIndex === index) {
-            const restSec = restDurationFor(
-              item,
-              settings,
-              position.setNumber >= item.targetSets,
-            );
+          if (!isExpanded(index)) {
             return (
-              <ExpandedExerciseCard
+              <CollapsedExerciseCard
                 entry={item}
-                loggedSets={grouped[index]}
-                ghostSets={ghostByEntry[index]}
-                current
-                restHint={
-                  settings.autostartRestTimer
+                done={grouped[index].length}
+                onPress={() => toggle(index)}
+              />
+            );
+          }
+          const open = openSetNumbers(item, grouped[index]);
+          const current = index === activeIndex && open.length > 0;
+          const restSec = restDurationFor(item, settings, open.length === 1);
+          return (
+            <ExpandedExerciseCard
+              entry={item}
+              loggedSets={grouped[index]}
+              ghostSets={ghostByEntry[index]}
+              current={current}
+              nextSet={
+                current ? (open.includes(storedSet) ? storedSet : open[0]) : undefined
+              }
+              restHint={
+                !current
+                  ? undefined
+                  : settings.autostartRestTimer
                     ? `Tap the box to log a set · rest ${restSec} s auto-starts`
                     : "Tap the box to log a set"
-                }
-                onLogSet={logCurrentSet}
-                onUnlogSet={unlogSet}
-                onOpenSet={(setNumber) => {
-                  setPosition(index, setNumber);
-                  router.push({
-                    pathname: "/session/[id]/focus",
-                    params: { id },
-                  });
-                }}
-              />
-            );
-          }
-          const complete = done[index] >= item.targetSets;
-          if (complete && reopenedIndex === index) {
-            return (
-              <ExpandedExerciseCard
-                entry={item}
-                loggedSets={grouped[index]}
-                ghostSets={ghostByEntry[index]}
-                current={false}
-                onLogSet={() => {}}
-                onUnlogSet={unlogSet}
-                onCollapse={() => setReopenedIndex(null)}
-              />
-            );
-          }
-          return (
-            <CollapsedExerciseCard
-              entry={item}
-              done={done[index]}
-              onPress={complete ? () => setReopenedIndex(index) : undefined}
+              }
+              onLogSet={(setNumber) => logSet(index, setNumber)}
+              onUnlogSet={unlogSet}
+              onOpenSet={(setNumber) => openSet(index, setNumber)}
+              onCollapse={() => toggle(index)}
             />
           );
         }}
         ListFooterComponent={
-          position ? null : (
+          allDone ? (
             <Text className="font-archivo text-sm text-muted text-center mt-4">
               {"All sets logged — finish when you're ready."}
             </Text>
-          )
+          ) : null
         }
       />
       {resting ? (
