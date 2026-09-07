@@ -19,7 +19,7 @@ import {
   useSessionSets,
   type SessionEntry,
 } from "@/db/queries/sessions";
-import { groupSetsByEntry } from "@/lib/session-sets";
+import { groupSetsByEntry, openSetNumbers } from "@/lib/session-sets";
 import type { SessionSet } from "@/db/schema";
 import { useSettings } from "@/db/queries/settings";
 import { MeasuredBy } from "@/lib/enums";
@@ -42,7 +42,7 @@ export default function SetFocus() {
   );
   const settings = useSettings();
   const now = useNow();
-  const { exerciseIndex } = useSessionStore();
+  const { exerciseIndex, setNumber: storedSet } = useSessionStore();
 
   if (!session) return <LoadingScreen />;
 
@@ -62,9 +62,14 @@ export default function SetFocus() {
 
   const grouped = groupSetsByEntry(entries, sets);
   const logged = grouped[index];
-  const setNumber = logged.length + 1;
-  const ghost = groupSetsByEntry(entries, ghosts)[index][setNumber - 1];
-  const exerciseDone = setNumber > entry.targetSets;
+  const open = openSetNumbers(entry, logged);
+  const setNumber = open.includes(storedSet)
+    ? storedSet
+    : (open[0] ?? entry.targetSets + 1);
+  const ghost = groupSetsByEntry(entries, ghosts)[index].find(
+    (g) => g.setNumber === setNumber,
+  );
+  const exerciseDone = open.length === 0;
   const elapsedSec = Math.max(0, Math.floor((now - session.startedAt) / 1000));
 
   // Writes the set, moves the pointer, starts rest, returns to the checklist.
@@ -76,6 +81,7 @@ export default function SetFocus() {
   }) => {
     const { restStarted } = logSetAndAdvance(
       session,
+      grouped,
       index,
       setNumber,
       settings,
@@ -89,6 +95,7 @@ export default function SetFocus() {
   const skip = () => {
     const { lastOfExercise } = logSetAndAdvance(
       session,
+      grouped,
       index,
       setNumber,
       settings,
@@ -289,7 +296,7 @@ function TitleBlock({
           </Text>
           <View className="flex-row gap-2 mt-2">
             {Array.from({ length: entry.targetSets }, (_, i) => {
-              const s = logged[i];
+              const s = logged.find((l) => l.setNumber === i + 1);
               const cls = s
                 ? s.skipped
                   ? "bg-white/30"

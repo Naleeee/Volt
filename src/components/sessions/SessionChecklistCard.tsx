@@ -11,10 +11,9 @@ import { describeSet } from "@/lib/describe-set";
 type CollapsedProps = {
   entry: SessionEntry;
   done: number;
-  onPress?: () => void;
+  onPress: () => void;
 };
 
-// Collapsed card: completed (struck through, tappable to reopen) or upcoming (0/n).
 export function CollapsedExerciseCard({
   entry,
   done,
@@ -24,10 +23,9 @@ export function CollapsedExerciseCard({
   return (
     <Pressable
       onPress={onPress}
-      disabled={!onPress}
-      accessibilityRole={onPress ? "button" : undefined}
-      accessibilityLabel={onPress ? `Show ${entry.name} sets` : undefined}
-      className={`flex-row items-center gap-2.5 bg-card border border-line rounded-2xl px-3 py-2.5 ${complete ? "opacity-55 active:opacity-80" : ""}`}
+      accessibilityRole="button"
+      accessibilityLabel={`Show ${entry.name} sets`}
+      className={`flex-row items-center gap-2.5 bg-card border border-line rounded-2xl px-3 py-2.5 active:opacity-80 ${complete ? "opacity-55" : ""}`}
     >
       <MediaThumb
         path={entry.mediaPath}
@@ -95,11 +93,12 @@ type ExpandedProps = {
   loggedSets: SessionSet[];
   ghostSets?: SessionSet[];
   current: boolean;
+  nextSet?: number;
   restHint?: string;
   onLogSet: (setNumber: number) => void;
   onUnlogSet: (setId: number) => void;
-  onOpenSet?: (setNumber: number) => void;
-  onCollapse?: () => void;
+  onOpenSet: (setNumber: number) => void;
+  onCollapse: () => void;
 };
 
 export function ExpandedExerciseCard({
@@ -107,6 +106,7 @@ export function ExpandedExerciseCard({
   loggedSets,
   ghostSets = [],
   current,
+  nextSet,
   restHint,
   onLogSet,
   onUnlogSet,
@@ -115,7 +115,7 @@ export function ExpandedExerciseCard({
 }: ExpandedProps) {
   const columns = columnsFor(entry);
   const showLast = ghostSets.length > 0 && entry.measuredBy !== MeasuredBy.Other;
-  const nextSet = current ? loggedSets.length + 1 : 0;
+  const complete = loggedSets.length >= entry.targetSets;
 
   return (
     <View
@@ -123,9 +123,8 @@ export function ExpandedExerciseCard({
     >
       <Pressable
         onPress={onCollapse}
-        disabled={!onCollapse}
-        accessibilityRole={onCollapse ? "button" : undefined}
-        accessibilityLabel={onCollapse ? `Hide ${entry.name} sets` : undefined}
+        accessibilityRole="button"
+        accessibilityLabel={`Hide ${entry.name} sets`}
         className="flex-row items-center gap-2.5"
       >
         <MediaThumb
@@ -148,8 +147,15 @@ export function ExpandedExerciseCard({
           <Text className="font-archivo-bold text-xs tracking-widest text-accent">
             CURRENT
           </Text>
-        ) : (
+        ) : complete ? (
           <Check size={18} color={colors.accent} />
+        ) : (
+          <Text
+            className="font-archivo-bold text-xs text-muted"
+            style={{ fontVariant: ["tabular-nums"] }}
+          >
+            {loggedSets.length}/{entry.targetSets}
+          </Text>
         )}
       </Pressable>
 
@@ -178,9 +184,9 @@ export function ExpandedExerciseCard({
 
       {Array.from({ length: entry.targetSets }, (_, i) => {
         const setNumber = i + 1;
-        const logged = loggedSets[i];
+        const logged = loggedSets.find((s) => s.setNumber === setNumber);
+        const ghost = ghostSets.find((g) => g.setNumber === setNumber);
         const isNext = setNumber === nextSet;
-        const isLastLogged = setNumber === loggedSets.length;
         const state = logged ? "done" : isNext ? "next" : "upcoming";
         return (
           <View
@@ -193,18 +199,16 @@ export function ExpandedExerciseCard({
               {setNumber}
             </Text>
             <Pressable
-              onPress={onOpenSet ? () => onOpenSet(setNumber) : undefined}
-              disabled={!isNext || !onOpenSet}
-              accessibilityRole={isNext && onOpenSet ? "button" : undefined}
-              accessibilityLabel={
-                isNext && onOpenSet ? `Open set ${setNumber}` : undefined
-              }
+              onPress={() => onOpenSet(setNumber)}
+              disabled={logged !== undefined}
+              accessibilityRole={logged ? undefined : "button"}
+              accessibilityLabel={logged ? undefined : `Open set ${setNumber}`}
               className="flex-1 flex-row gap-1.5 active:opacity-80"
             >
               {showLast ? (
                 <View className="flex-1 h-10 items-center justify-center">
                   <Text className="font-archivo-semibold text-sm text-muted" numberOfLines={1}>
-                    {ghostSets[i] ? describeSet(ghostSets[i], entry.measuredBy, true) : "–"}
+                    {ghost ? describeSet(ghost, entry.measuredBy, true) : "–"}
                   </Text>
                 </View>
               ) : null}
@@ -236,7 +240,6 @@ export function ExpandedExerciseCard({
             {logged ? (
               <Pressable
                 onPress={() => onUnlogSet(logged.id)}
-                disabled={!isLastLogged}
                 accessibilityRole="button"
                 accessibilityLabel={
                   logged.skipped
@@ -260,14 +263,13 @@ export function ExpandedExerciseCard({
             ) : (
               <Pressable
                 onPress={() =>
-                  entry.measuredBy === MeasuredBy.Other && onOpenSet
+                  entry.measuredBy === MeasuredBy.Other
                     ? onOpenSet(setNumber)
                     : onLogSet(setNumber)
                 }
-                disabled={!isNext}
                 accessibilityRole="button"
                 accessibilityLabel={`Log set ${setNumber}`}
-                className={`w-11 h-10 rounded-lg border-2 border-white/20 ${isNext ? "active:opacity-80" : ""}`}
+                className="w-11 h-10 rounded-lg border-2 border-white/20 active:opacity-80"
               />
             )}
           </View>

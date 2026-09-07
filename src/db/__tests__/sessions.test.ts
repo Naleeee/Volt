@@ -145,6 +145,13 @@ describe("getResumePosition", () => {
     logSet({ sessionId: id, exerciseId: plank, setNumber: 1 });
     expect(getResumePosition(id, routine)).toBeNull();
   });
+
+  it("resumes at the lowest open set when sets were logged out of order", () => {
+    const { routine, bench } = seedRoutine();
+    const { id } = startSession(routine);
+    logSet({ sessionId: id, exerciseId: bench, setNumber: 2 });
+    expect(getResumePosition(id, routine)).toEqual({ exerciseIndex: 0, setNumber: 1 });
+  });
 });
 
 describe("useActiveSession", () => {
