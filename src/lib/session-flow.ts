@@ -52,12 +52,13 @@ export function logSetAndAdvance(
   const after = grouped.map((g, i) => (i === index ? [...g, { setNumber }] : g));
   const lastOfExercise = openSetNumbers(entry, after[index]).length === 0;
   const next = nextPositionFrom(session.entries, after, index);
-  const { setPosition, startRest } = useSessionStore.getState();
+  const { setPosition, startRest, clearRest } = useSessionStore.getState();
   setPosition(next?.exerciseIndex ?? index, next?.setNumber ?? setNumber);
 
   const restStarted =
     !values.skipped && settings.autostartRestTimer && next !== null;
   if (restStarted) startRest(restDurationFor(entry, settings, lastOfExercise));
+  else clearRest();
   return { lastOfExercise, restStarted };
 }
 
