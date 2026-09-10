@@ -1,8 +1,14 @@
 import { Directory, File, Paths } from "expo-file-system";
+import { Image, type ImageRef } from "expo-image";
+import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
+import { createVideoPlayer, type VideoThumbnail } from "expo-video";
 import { MediaType } from "@/lib/enums";
 
 export type PickedMedia = { uri: string; type: MediaType };
+
+const MAX_PX = 1080;
+const JPEG_QUALITY = 0.8;
 
 const mediaDir = () => new Directory(Paths.document, "media");
 
@@ -14,6 +20,10 @@ export function isStoredName(path: string) {
 
 export function mediaUri(name: string) {
   return new File(mediaDir(), name).uri;
+}
+
+export function posterName(name: string) {
+  return `${name}.jpg`;
 }
 
 export async function pickMedia(): Promise<PickedMedia | null> {
@@ -35,14 +45,48 @@ function assetType(asset: ImagePicker.ImagePickerAsset): MediaType {
   return MediaType.Photo;
 }
 
-// Copies a picked temp file into the media dir, returns the stored filename.
-export function persistMedia(tempUri: string) {
+export async function persistMedia(tempUri: string, type: MediaType | null) {
   const dir = mediaDir();
   if (!dir.exists) dir.create();
+  const stamp = `media-${Date.now()}`;
+  if (type === MediaType.Photo) {
+    const image = await Image.loadAsync(tempUri, {
+      maxWidth: MAX_PX,
+      maxHeight: MAX_PX,
+    });
+    return saveJpeg(image, `${stamp}.jpg`);
+  }
   const base = tempUri.split("/").pop() ?? "";
   const dot = base.lastIndexOf(".");
-  const name = `media-${Date.now()}${dot === -1 ? "" : base.slice(dot)}`;
-  new File(tempUri).copySync(new File(dir, name));
+  const name = `${stamp}${dot === -1 ? "" : base.slice(dot)}`;
+  await new File(tempUri).copy(new File(dir, name));
+  if (type === MediaType.Video) await savePoster(name);
+  return name;
+}
+
+// Best-effort: a video without a poster only shows a blank thumbnail.
+async function savePoster(videoName: string) {
+  const player = createVideoPlayer(mediaUri(videoName));
+  try {
+    const [frame] = await player.generateThumbnailsAsync(0, {
+      maxWidth: MAX_PX,
+      maxHeight: MAX_PX,
+    });
+    await saveJpeg(frame, posterName(videoName));
+  } catch (error) {
+    if (__DEV__) console.error(error);
+  } finally {
+    player.release();
+  }
+}
+
+async function saveJpeg(image: ImageRef | VideoThumbnail, name: string) {
+  const rendered = await ImageManipulator.manipulate(image).renderAsync();
+  const saved = await rendered.saveAsync({
+    format: SaveFormat.JPEG,
+    compress: JPEG_QUALITY,
+  });
+  await new File(saved.uri).move(new File(mediaDir(), name));
   return name;
 }
 
@@ -58,10 +102,12 @@ export function clearMediaDir() {
 // Best-effort: a leaked file must never fail a save.
 export function deleteMedia(name: string | null) {
   if (!name) return;
-  try {
-    const file = new File(mediaDir(), name);
-    if (file.exists) file.delete();
-  } catch (error) {
-    if (__DEV__) console.error(error);
+  for (const stored of [name, posterName(name)]) {
+    try {
+      const file = new File(mediaDir(), stored);
+      if (file.exists) file.delete();
+    } catch (error) {
+      if (__DEV__) console.error(error);
+    }
   }
 }

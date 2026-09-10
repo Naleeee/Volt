@@ -45,8 +45,13 @@ export class File {
   delete() {
     entries.delete(this.uri);
   }
-  copySync(destination: File) {
+  async copy(destination: File) {
     entries.set(destination.uri, entries.get(this.uri) ?? "");
+  }
+  async move(destination: File) {
+    await this.copy(destination);
+    entries.delete(this.uri);
+    this.uri = destination.uri;
   }
 }
 

@@ -62,7 +62,7 @@ export function useExercise(id: number) {
 }
 
 export async function insertExercise(values: ExerciseFormValues) {
-  const row = toRow(values);
+  const row = await toRow(values);
   try {
     const [inserted] = await db.insert(exercises).values(row).returning();
     return inserted;
@@ -79,7 +79,7 @@ export async function updateExercise(id: number, values: ExerciseFormValues) {
     .from(exercises)
     .where(eq(exercises.id, id))
     .get();
-  const row = toRow(values);
+  const row = await toRow(values);
   try {
     await db.update(exercises).set(row).where(eq(exercises.id, id));
   } catch (error) {
@@ -104,11 +104,11 @@ export async function unarchiveExercise(id: number) {
     .where(eq(exercises.id, id));
 }
 
-function toRow(values: ExerciseFormValues) {
+async function toRow(values: ExerciseFormValues) {
   const parsed = exerciseFormSchema.parse(values);
   const mediaPath =
     parsed.mediaPath && !isStoredName(parsed.mediaPath)
-      ? persistMedia(parsed.mediaPath)
+      ? await persistMedia(parsed.mediaPath, parsed.mediaType)
       : parsed.mediaPath;
   return {
     ...parsed,
