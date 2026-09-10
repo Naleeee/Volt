@@ -43,7 +43,7 @@ export const useSessionStore = create<SessionState>((set) => ({
   restore: (sessionId, exerciseIndex, setNumber) =>
     set({ ...idle, sessionId, exerciseIndex, setNumber }),
   setPosition: (exerciseIndex, setNumber) =>
-    set({ exerciseIndex, setNumber, ...noHold, restEndsAt: null }),
+    set({ exerciseIndex, setNumber, ...noHold }),
   startHold: () => set({ holdStartedAt: Date.now() }),
   pauseHold: () =>
     set((s) => ({

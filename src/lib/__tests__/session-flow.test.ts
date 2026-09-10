@@ -106,15 +106,17 @@ describe("logSetAndAdvance", () => {
     expect(store()).toMatchObject({ exerciseIndex: 1, setNumber: 1, restDurationSec: 90 });
   });
 
-  it("stays on the last entry and skips rest after the final set of the workout", () => {
+  it("stays on the last entry and clears rest after the final set of the workout", () => {
     store().begin(5);
+    store().startRest(45);
     const result = logSetAndAdvance(session, [[{ setNumber: 1 }, { setNumber: 2 }], []], 1, 1, settings, { timeSec: 45 });
     expect(result).toEqual({ lastOfExercise: true, restStarted: false });
     expect(store()).toMatchObject({ exerciseIndex: 1, setNumber: 1, restEndsAt: null });
   });
 
-  it("skipped sets get no haptics and no rest", () => {
+  it("skipped sets get no haptics and clear any running rest", () => {
     store().begin(5);
+    store().startRest(45);
     const result = logSetAndAdvance(session, [[], []], 0, 1, settings, { skipped: true });
     expect(Haptics.impactAsync).not.toHaveBeenCalled();
     expect(result.restStarted).toBe(false);

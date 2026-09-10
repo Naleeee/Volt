@@ -23,12 +23,12 @@ describe("position", () => {
     expect(store()).toMatchObject({ sessionId: 8, exerciseIndex: 2, setNumber: 3 });
   });
 
-  it("setPosition drops any running hold and rest", () => {
+  it("setPosition drops any running hold but keeps rest", () => {
     store().begin(1);
     store().startHold();
     store().startRest(45);
     store().setPosition(1, 2);
-    expect(store()).toMatchObject({ exerciseIndex: 1, setNumber: 2, holdStartedAt: null, holdElapsedMs: 0, restEndsAt: null });
+    expect(store()).toMatchObject({ exerciseIndex: 1, setNumber: 2, holdStartedAt: null, holdElapsedMs: 0, restEndsAt: NOW + 45_000 });
   });
 
   it("end returns to idle", () => {
