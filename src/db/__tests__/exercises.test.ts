@@ -59,7 +59,7 @@ describe("insertExercise", () => {
       mediaPath: "file:///tmp/pick.gif",
       mediaType: "gif",
     });
-    expect(persistMedia).toHaveBeenCalledWith("file:///tmp/pick.gif");
+    expect(persistMedia).toHaveBeenCalledWith("file:///tmp/pick.gif", "gif");
     expect(fresh).toMatchObject({ mediaPath: "stored-pick.gif", mediaType: "gif" });
 
     const stored = await insertExercise({

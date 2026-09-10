@@ -1,11 +1,10 @@
 import { useEventListener } from "expo";
 import { Image } from "expo-image";
-import { createVideoPlayer, useVideoPlayer, VideoView } from "expo-video";
-import type { VideoThumbnail } from "expo-video";
-import { useEffect, useState } from "react";
+import { useVideoPlayer, VideoView } from "expo-video";
+import { useState } from "react";
 import { Dimensions, View } from "react-native";
 import { MediaType } from "@/lib/enums";
-import { isStoredName, mediaUri } from "@/lib/media";
+import { isStoredName, mediaUri, posterName } from "@/lib/media";
 
 type Props = {
   path: string | null;
@@ -27,7 +26,13 @@ export default function MediaThumb({
   maxHeight,
   className = "",
 }: Props) {
-  const uri = path ? (isStoredName(path) ? mediaUri(path) : path) : null;
+  const video = type === MediaType.Video;
+  // Static video thumbs show the poster saved beside the file instead of allocating a player.
+  const uri = path
+    ? isStoredName(path)
+      ? mediaUri(video && !animated ? posterName(path) : path)
+      : path
+    : null;
   const [sized, setSized] = useState<{ uri: string; ratio: number } | null>(
     null,
   );
@@ -53,12 +58,8 @@ export default function MediaThumb({
       }
     >
       {uri ? (
-        type === MediaType.Video ? (
-          animated ? (
-            <VideoThumb uri={uri} onSize={onSize} />
-          ) : (
-            <VideoStill uri={uri} onSize={onSize} />
-          )
+        video && animated ? (
+          <VideoThumb uri={uri} onSize={onSize} />
         ) : (
           <Image
             source={{ uri }}
@@ -104,32 +105,4 @@ function VideoThumb({ uri, onSize }: MediaProps) {
       style={FILL}
     />
   );
-}
-
-function VideoStill({ uri, onSize }: MediaProps) {
-  const [frame, setFrame] = useState<VideoThumbnail | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    const player = createVideoPlayer(uri);
-    player
-      .generateThumbnailsAsync(0)
-      .then(([thumb]) => {
-        if (!cancelled) setFrame(thumb);
-      })
-      .catch((error) => {
-        if (__DEV__) console.error(error);
-      })
-      .finally(() => player.release());
-    return () => {
-      cancelled = true;
-    };
-  }, [uri]);
-  return frame ? (
-    <Image
-      source={frame}
-      contentFit="cover"
-      style={FILL}
-      onLoad={(e) => onSize(e.source.width, e.source.height)}
-    />
-  ) : null;
 }
