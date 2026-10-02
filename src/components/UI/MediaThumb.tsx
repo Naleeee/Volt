@@ -4,7 +4,7 @@ import { useVideoPlayer, VideoView } from "expo-video";
 import { useState } from "react";
 import { Dimensions, View } from "react-native";
 import { MediaType } from "@/lib/enums";
-import { isStoredName, mediaUri, posterName } from "@/lib/media";
+import { hasPoster, isStoredName, mediaUri, posterName } from "@/lib/media";
 
 type Props = {
   path: string | null;
@@ -27,10 +27,12 @@ export default function MediaThumb({
   className = "",
 }: Props) {
   const video = type === MediaType.Video;
-  // Static video thumbs show the poster saved beside the file instead of allocating a player.
+  const poster =
+    !animated &&
+    (video || (type === MediaType.Gif && path !== null && hasPoster(path)));
   const uri = path
     ? isStoredName(path)
-      ? mediaUri(video && !animated ? posterName(path) : path)
+      ? mediaUri(poster ? posterName(path) : path)
       : path
     : null;
   const [sized, setSized] = useState<{ uri: string; ratio: number } | null>(
@@ -66,6 +68,7 @@ export default function MediaThumb({
             contentFit="cover"
             style={FILL}
             autoplay={animated}
+            cachePolicy={animated ? "none" : undefined}
             onLoad={(e) => onSize(e.source.width, e.source.height)}
           />
         )

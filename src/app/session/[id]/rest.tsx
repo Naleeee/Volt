@@ -45,11 +45,6 @@ export default function RestScreen() {
     }
   }, [over, clearRest]);
 
-  const skip = () => {
-    clearRest();
-    router.back();
-  };
-
   const upNext = (() => {
     if (!session) return null;
     const grouped = groupSetsByEntry(session.entries, sets);
@@ -111,7 +106,7 @@ export default function RestScreen() {
             variant="outline"
             size="md"
             label="Skip rest"
-            onPress={skip}
+            onPress={clearRest}
           />
         </View>
       </View>
