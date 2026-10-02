@@ -8,7 +8,7 @@ on:
 
 jobs:
   in-progress:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.repository == 'Naleeee/Volt'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,6 +22,7 @@ jobs:
   link-pr:
     if:
       github.event_name == 'pull_request' && github.event.action == 'opened' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
       startsWith(github.head_ref, 'VT-')
     runs-on: ubuntu-latest
     permissions:
@@ -42,8 +43,9 @@ jobs:
   done:
     if:
       github.event_name == 'pull_request' && github.event.action == 'closed' &&
-      github.event.pull_request.merged == true && startsWith(github.head_ref,
-      'VT-')
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.head_ref, 'VT-')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
