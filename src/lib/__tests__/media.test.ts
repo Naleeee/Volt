@@ -10,6 +10,7 @@ import { MediaType } from "@/lib/enums";
 import {
   clearMediaDir,
   deleteMedia,
+  hasPoster,
   isStoredName,
   mediaUri,
   persistMedia,
@@ -119,14 +120,32 @@ describe("persistMedia", () => {
     expect(fakeFs.entries.has(RENDERED)).toBe(false);
   });
 
-  it("copies a GIF untouched under a timestamped name", async () => {
+  it("copies a GIF untouched and saves a poster frame beside it", async () => {
     fakeFs.entries.set("file:///tmp/loop.GIF", "bytes");
     await expect(persistMedia("file:///tmp/loop.GIF", MediaType.Gif)).resolves.toBe(
       `media-${NOW}.GIF`,
     );
     expect(fakeFs.entries.get(`${MEDIA}/media-${NOW}.GIF`)).toBe("bytes");
+    expect(ImageManipulator.manipulate).toHaveBeenCalledWith(`${MEDIA}/media-${NOW}.GIF`);
+    expect(fakeFs.entries.get(`${MEDIA}/media-${NOW}.GIF.jpg`)).toBe("jpeg");
+    expect(hasPoster(`media-${NOW}.GIF`)).toBe(true);
     expect(Image.loadAsync).not.toHaveBeenCalled();
     expect(createVideoPlayer).not.toHaveBeenCalled();
+  });
+
+  it("keeps the GIF when its poster cannot be generated", async () => {
+    jest.mocked(ImageManipulator.manipulate).mockImplementation(() => {
+      throw new Error("no bitmap");
+    });
+    const error = jest.spyOn(console, "error").mockImplementation(() => {});
+    fakeFs.entries.set("file:///tmp/loop.gif", "bytes");
+    await expect(persistMedia("file:///tmp/loop.gif", MediaType.Gif)).resolves.toBe(
+      `media-${NOW}.gif`,
+    );
+    expect(fakeFs.entries.get(`${MEDIA}/media-${NOW}.gif`)).toBe("bytes");
+    expect(hasPoster(`media-${NOW}.gif`)).toBe(false);
+    expect(error).toHaveBeenCalledWith(expect.any(Error));
+    error.mockRestore();
   });
 
   it("copes with a pick that has no extension and reuses an existing dir", async () => {

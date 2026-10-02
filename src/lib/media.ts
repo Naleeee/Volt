@@ -26,6 +26,10 @@ export function posterName(name: string) {
   return `${name}.jpg`;
 }
 
+export function hasPoster(name: string) {
+  return new File(mediaDir(), posterName(name)).exists;
+}
+
 export async function pickMedia(): Promise<PickedMedia | null> {
   const result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ["images", "videos"],
@@ -61,7 +65,16 @@ export async function persistMedia(tempUri: string, type: MediaType | null) {
   const name = `${stamp}${dot === -1 ? "" : base.slice(dot)}`;
   await new File(tempUri).copy(new File(dir, name));
   if (type === MediaType.Video) await savePoster(name);
+  if (type === MediaType.Gif) await saveGifPoster(name);
   return name;
+}
+
+async function saveGifPoster(gifName: string) {
+  try {
+    await saveJpeg(mediaUri(gifName), posterName(gifName));
+  } catch (error) {
+    if (__DEV__) console.error(error);
+  }
 }
 
 // Best-effort: a video without a poster only shows a blank thumbnail.
@@ -80,7 +93,7 @@ async function savePoster(videoName: string) {
   }
 }
 
-async function saveJpeg(image: ImageRef | VideoThumbnail, name: string) {
+async function saveJpeg(image: ImageRef | VideoThumbnail | string, name: string) {
   const rendered = await ImageManipulator.manipulate(image).renderAsync();
   const saved = await rendered.saveAsync({
     format: SaveFormat.JPEG,
