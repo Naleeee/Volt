@@ -114,5 +114,12 @@ Security issues go through [SECURITY.md](SECURITY.md).
 
 ## License
 
-[MIT](LICENSE). The Archivo font in `assets/static/` is licensed under the
+[MIT](LICENSE)
+
+The Archivo font in `assets/static/` is licensed under the
 [SIL Open Font License](assets/static/OFL.txt).
+
+Sound Effect by
+<a href="https://pixabay.com/users/universfield-28281460/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=363746">Universfield</a>
+from
+<a href="https://pixabay.com/sound-effects//?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=363746">Pixabay</a>
