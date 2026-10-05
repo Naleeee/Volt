@@ -5,13 +5,19 @@
 # Volt
 
 <!-- coverage-badge:start -->
+
 ![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
+
 <!-- coverage-badge:end -->
+
 ![License: MIT](https://img.shields.io/badge/license-MIT-blue)
 
-Personal workout tracker for Android. Offline, no account, no backend — everything lives in a SQLite database on the phone.
+Personal workout tracker for Android. Offline, no account, no backend,
+everything lives in a SQLite database on the phone.
 
-Build routines from your own exercise library, run them with a set-by-set checklist, rest timer and last-session ghost values, and keep a crash-safe log of every set.
+Build routines from your own exercise library, run them with a set-by-set
+checklist, rest timer and last-session ghost values, and keep a crash-safe log
+of every set.
 
 ## Screenshots
 
@@ -28,41 +34,61 @@ Build routines from your own exercise library, run them with a set-by-set checkl
 
 ## Features
 
-- **Exercise library** — exercises measured by reps, time or a free-form note, with a photo, GIF or short video demo; search and type filters; per-exercise rest override; archive and restore.
-- **Routines** — pick exercises from the library, drag to reorder, set targets (sets × reps or seconds, optional weight in kg); detail view with estimated duration and last performed.
-- **Sessions** — one card per exercise, rep stepper and hold-timer focus views, rest timer with +15 s and skip, ghost values from the previous session.
-- **Crash-safe** — every set is written to the database the moment it is logged; an unfinished session shows a Resume bar on Home.
-- **Session comfort** — keep screen awake, timer sounds and haptics, local notification when rest ends, back-button confirmation before leaving a workout.
-- **Summary & stats** — duration, sets, total volume and a per-exercise breakdown after each session; this-week workouts and weekly streak on Home.
-- **Settings** — rest defaults, auto-start rest, sounds, keep awake, CSV export via the share sheet, erase all data.
+- **Exercise library**: exercises measured by reps, time or a free-form note,
+  with a photo, GIF or short video demo. Search and type filters, per-exercise
+  rest override, archive and restore.
+- **Routines**: pick exercises from the library, drag to reorder, set targets
+  (sets × reps or seconds, optional weight in kg). Detail view with estimated
+  duration and last performed.
+- **Sessions**: one card per exercise, rep stepper and hold-timer focus views.
+  Rest timer with skip and ghost values from the previous session.
+- **Crash-safe**: every set is written to the database the moment it is logged,
+  an unfinished session shows a Resume bar on Home.
+- **Session comfort**: keep screen awake, timer sounds and haptics, local
+  notification when rest ends, back-button confirmation before leaving a
+  workout.
+- **Summary & stats**: duration, sets, total volume and a per-exercise breakdown
+  after each session. This-week workouts and weekly streak on Home.
+- **Settings**: rest defaults, auto-start rest, sounds, keep awake, CSV export
+  via the share sheet, erase all data.
 
-Conventions: weights are always in kg, with no unit conversion anywhere. Dumbbell weights are per hand; barbell and machine weights are the total load. Weeks start on Monday and are computed in local time.
+> Conventions: weights are always in kg, with no unit conversion anywhere.
+> Dumbbell weights are per hand; barbell and machine weights are the total load.
+> Weeks start on Monday and are computed in local time.
 
 ## Roadmap
 
 Not built yet, in rough order of interest:
 
-- History tab: past sessions, session detail, per-exercise records (heaviest set, longest hold).
+- History tab: past sessions, session detail, per-exercise records (heaviest
+  set, longest hold).
 - Charts: volume per week, weight over time per exercise.
 - Duplicate routine.
-- lb / kg setting — storage stays in kg, conversion happens only at input and display.
-- Supersets and circuits.
-- Live rest countdown in an ongoing notification while the app is in the background.
-- Health Connect, home-screen widgets, launching a music app playlist when a routine starts.
-
-Out of scope: accounts, sync, backend, web dashboard.
+- lb / kg setting — storage stays in kg, conversion happens only at input and
+  display.
+- Live rest countdown in an ongoing notification while the app is in the
+  background.
+- Health Connect, home-screen widgets, launching a music app playlist when a
+  routine starts.
 
 ## Data & backup
 
-Everything is stored in a SQLite file plus a media folder inside the app's private storage. Android Auto Backup covers app data up to 25 MB per app, which is plenty for the database but the exercise media folder can exceed it, in which case media silently stops being backed up. The CSV export in Settings is the real safety net for your training history; media can always be re-added.
+Everything is stored in a SQLite file plus a media folder inside the app's
+private storage. Android Auto Backup covers app data up to 25 MB per app, which
+is plenty for the database but the exercise media folder can exceed it, in which
+case media silently stops being backed up. The CSV export in Settings is the
+real safety net for your training history, media are not included in the backup
+but can always be re-added.
 
 ## Tech stack
 
-Expo SDK 57 · React Native · TypeScript · expo-router · expo-sqlite + Drizzle ORM · NativeWind · Zustand · react-hook-form + zod · Jest (jest-expo) + Testing Library
+Expo SDK 57 · React Native · TypeScript · expo-router · expo-sqlite + Drizzle
+ORM · NativeWind · Zustand · react-hook-form + zod · Jest
 
 ## Getting started
 
-Prerequisites: Node 24 (`.nvmrc`), Android Studio (Android SDK + JDK 17), and a phone with USB debugging enabled or an emulator.
+Prerequisites: Node 24 (`.nvmrc`), Android Studio (Android SDK + JDK 17), and a
+phone with USB debugging enabled or an emulator.
 
 ```bash
 npm install
@@ -70,104 +96,23 @@ npx expo run:android   # one-time: build the dev build and install it on the dev
 npm start              # day to day: JS hot-reloads into the installed dev build
 ```
 
-Expo Go is not enough — notifications and some native modules need a development build. Rebuild only when native modules change. For a standalone install that runs without the dev server:
+Expo Go is not enough — notifications and some native modules need a development
+build. Rebuild only when native modules change. For a standalone install that
+runs without the dev server:
 
 ```bash
 npx expo run:android --variant release
 ```
 
-The `android/` folder is generated by Expo prebuild and not committed; native configuration lives in `app.json` and `plugins/`.
-
-## Scripts
-
-| Command | What it does |
-| --- | --- |
-| `npm start` | Start the Metro dev server |
-| `npm run android` | Build and install the Android dev build |
-| `npm run lint` | ESLint via `expo lint` |
-| `npm test` | Run the Jest test suite |
-| `npm run test:coverage` | Run the tests and print the per-file coverage table |
-| `npm run coverage:readme` | Run the tests with coverage and refresh the badge and table in this README |
-| `npx drizzle-kit generate` | Generate a SQL migration after editing `src/db/schema.ts` |
-
-## Tests & coverage
-
-Tests use Jest with the `jest-expo` preset and live next to the code in `__tests__` folders:
-
-- `src/db/__tests__` — schema, migrations and every query module, run against a real in-memory SQLite database via `better-sqlite3`. The expo-sqlite client is swapped for it by `src/db/__mocks__/client.ts`, and the live-query hooks are called as plain functions.
-- `src/lib/__tests__` — pure helpers, the session store and flow, and the expo-backed helpers (media, export, notifications, sounds) with the native modules mocked.
-- Hooks render with `renderHook` from `@testing-library/react-native`.
-
-Coverage is measured on the logic layer only: `src/lib` and `src/db`, excluding generated migrations. Screens and components are not unit-tested.
-
-<!-- coverage-table:start -->
-| Metric | Coverage | Covered |
-| --- | --- | --- |
-| Statements | 99.75% | 408 / 409 |
-| Branches | 96.96% | 224 / 231 |
-| Functions | 100% | 129 / 129 |
-| Lines | 100% | 355 / 355 |
-<!-- coverage-table:end -->
-
-_Updated by `npm run coverage:readme`._
-
-## Project structure
-
-```
-src/
-  app/          expo-router screens: (tabs) Routines · Library · Settings, routine/, exercise/, session/
-  components/   shared UI, grouped by domain
-  db/           Drizzle schema, client, generated migrations (drizzle/), queries/ (reads and writes per domain)
-  lib/          pure helpers, session store, media, notifications, sounds
-  constants/    theme tokens shared by Tailwind and components
-plugins/        Expo config plugins applied at prebuild
-```
-
-How the pieces fit:
-
-- Screens read through `useLiveQuery` hooks and write through functions from `src/db/queries/<domain>.ts`. A domain's reads and writes live in one file, and screens never import `schema` or `client` directly.
-- Timers are timestamps, not intervals: the session store holds `restEndsAt` and the UI derives the remaining time, so a backgrounded or killed app shows the right value when it comes back. The rest-end notification is scheduled when rest starts and cancelled on skip.
-- Every logged set is inserted immediately. The Zustand store holds only ephemeral pointers to the active session, never unsaved workout data.
-- Timestamps are unix milliseconds. Migrations are `.sql` files bundled into the app and applied at startup by `useMigrations`.
-
-## Database workflow
-
-| Table | Purpose |
-| --- | --- |
-| `exercises` | name, measured by (`reps` / `time` / `other`), media, notes, rest override, archived at |
-| `routines` | name, created at, archived at |
-| `routine_exercises` | ordered entries of a routine with targets (sets, reps or seconds, weight in kg) |
-| `sessions` | one row per workout: routine, started at, ended at |
-| `session_sets` | every logged set: reps or seconds, weight, note, skipped, completed at |
-| `settings` | key / value store for user preferences |
-
-1. Edit `src/db/schema.ts`.
-2. Run `npx drizzle-kit generate` — a new migration lands in `src/db/drizzle/`.
-3. Reload the app; migrations run at startup.
-
-CI fails if `schema.ts` and the migrations folder drift apart.
-
-## CI
-
-Every pull request runs lint, typecheck, unit and database tests, a migrations sync check and a Metro bundle export. Pushes to `main` also build a release APK, downloadable from the workflow run.
-
-## Releases
-
-The APK built on `main` is signed with the shared Android debug key unless signing secrets are configured, so it is fine for testing but not for distribution. To sign with your own key:
-
-```bash
-keytool -genkeypair -v -keystore upload.keystore -alias volt -keyalg RSA -keysize 2048 -validity 10000
-base64 -i upload.keystore | pbcopy   # paste into the ANDROID_KEYSTORE_BASE64 secret
-```
-
-Repository secrets: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`. Keep the keystore file itself out of the repository; every APK you publish must be signed with the same key or Android refuses to update over an existing install.
-
-For a signed local build, put the same values in `~/.gradle/gradle.properties` as `VOLT_UPLOAD_STORE_FILE` (absolute path), `VOLT_UPLOAD_STORE_PASSWORD`, `VOLT_UPLOAD_KEY_ALIAS` and `VOLT_UPLOAD_KEY_PASSWORD`, then run `npx expo run:android --variant release`.
+The `android/` folder is generated by Expo prebuild and not committed, native
+configuration lives in `app.json` and `plugins/`.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the branch and commit conventions. Security issues go through [SECURITY.md](SECURITY.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the branch and commit conventions.
+Security issues go through [SECURITY.md](SECURITY.md).
 
 ## License
 
-[MIT](LICENSE). The Archivo font in `assets/static/` is licensed under the [SIL Open Font License](assets/static/OFL.txt).
+[MIT](LICENSE). The Archivo font in `assets/static/` is licensed under the
+[SIL Open Font License](assets/static/OFL.txt).
