@@ -2,7 +2,7 @@ name: Android build
 
 on:
   push:
-    branches: [main]
+    tags: ["v*"]
   workflow_dispatch:
 
 concurrency:
@@ -16,7 +16,7 @@ jobs:
   build:
     if: github.repository == 'Naleeee/Volt'
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     env:
       ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
       ORG_GRADLE_PROJECT_VOLT_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -43,8 +43,9 @@ jobs:
           echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/upload.keystore
           echo "ORG_GRADLE_PROJECT_VOLT_UPLOAD_STORE_FILE=upload.keystore" >> "$GITHUB_ENV"
       - uses: gradle/actions/setup-gradle@v4
+      # Phones are arm64; skipping the other three ABIs cuts the native compile and the APK size by ~4x
       - name: Build release APK
-        run: cd android && ./gradlew assembleRelease --no-daemon
+        run: cd android && ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a
       - uses: actions/upload-artifact@v4
         with:
           name: volt-release-apk

@@ -149,11 +149,11 @@ CI fails if `schema.ts` and the migrations folder drift apart.
 
 ## CI
 
-Every pull request runs lint, typecheck, unit and database tests, a migrations sync check and a Metro bundle export. Pushes to `main` also build a release APK, downloadable from the workflow run.
+Every pull request runs lint, typecheck, unit and database tests, a migrations sync check and a Metro bundle export. Pushing a `v*` tag (or running the "Android build" workflow by hand) builds an arm64 release APK, downloadable from the workflow run.
 
 ## Releases
 
-The APK built on `main` is signed with the shared Android debug key unless signing secrets are configured, so it is fine for testing but not for distribution. To sign with your own key:
+The APK built by the workflow is signed with the shared Android debug key unless signing secrets are configured, so it is fine for testing but not for distribution. To sign with your own key:
 
 ```bash
 keytool -genkeypair -v -keystore upload.keystore -alias volt -keyalg RSA -keysize 2048 -validity 10000
